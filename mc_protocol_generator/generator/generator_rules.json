@@ -1,0 +1,53 @@
+{
+    "io": {
+        "reader_file": "${module_name}.io.data_reader.py",
+        "writer_file": "${module_name}.io.data_writer.py",
+        "datatype_length": "${module_name}.io.datatype_length.py"
+    },
+    "readers": {
+        "bool": "read_boolean",
+        "byte": "read_byte",
+        "ubyte": "read_ubyte",
+        "short": "read_short",
+        "ushort": "read_ushort",
+        "int": "read_int",
+        "long": "read_long",
+        "float": "read_float",
+        "double": "read_double",
+        "string": "read_string",
+        "chat": "read_chat",
+        "identifier": "read_identifier",
+        "varint": "read_varint",
+        "varlong": "read_varlong",
+        "entity_metadata": "read_entity_metadata",
+        "slot": "read_slot",
+        "nbt_tag": "read_nbt_tag",
+        "position": "read_position",
+        "angle": "read_angle",
+        "uuid": "read_uuid",
+        "byte_array": "read_byte_array"
+    },
+    "writers": {
+        "bool": "write_boolean",
+        "byte": "write_byte",
+        "ubyte": "write_ubyte",
+        "short": "write_short",
+        "ushort": "write_ushort",
+        "int": "write_int",
+        "long": "write_long",
+        "float": "write_float",
+        "double": "write_double",
+        "string": "write_string",
+        "chat": "write_chat",
+        "identifier": "write_identifier",
+        "varint": "write_varint",
+        "varlong": "write_varlong",
+        "entity_metadata": "write_entity_metadata",
+        "slot": "write_slot",
+        "nbt_tag": "write_nbt_tag",
+        "position": "write_position",
+        "angle": "write_angle",
+        "uuid": "write_uuid",
+        "byte_array": "write_byte_array"
+    }
+}
