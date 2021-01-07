@@ -95,7 +95,7 @@ def write_uuid(writer, value):
 def write_byte_array(writer, value):
     writer.write(value)
 
-class PacketWriter:
+class DataWriter:
     def __new__(cls, writer):
         writer.write_boolean = write_boolean
         writer.write_byte = write_byte

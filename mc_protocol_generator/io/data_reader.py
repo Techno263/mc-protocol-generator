@@ -182,7 +182,7 @@ def read_uuid(reader):
 def read_byte_array(reader, length):
     return reader.read(length)
 
-class PacketReader:
+class DataReader:
     def __new__(cls, reader):
         reader.read_boolean = read_boolean
         reader.read_byte = read_byte
