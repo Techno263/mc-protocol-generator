@@ -1,8 +1,10 @@
 from enum import IntEnum
-from tag import (EndTag, ByteTag, ShortTag, IntTag,
+'''
+from .tag import (EndTag, ByteTag, ShortTag, IntTag,
                  LongTag, FloatTag, DoubleTag, ByteArrayTag,
                  StringTag, ListTag, CompoundTag, IntArrayTag,
                  LongArrayTag)
+'''
 
 class NBTTag(IntEnum):
     End = 0
@@ -19,6 +21,7 @@ class NBTTag(IntEnum):
     IntArray = 11
     LongArray = 12
 
+    '''
     def get_type(self):
         if self == End:
             return EndTag
@@ -48,6 +51,7 @@ class NBTTag(IntEnum):
             return LongArrayTag
         else:
             raise Exception
+    '''
 
     @staticmethod
     def from_bytes(bytes):

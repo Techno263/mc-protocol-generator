@@ -1,11 +1,22 @@
 import struct
-from . import TagBase
+from .collections_tag_base import SequenceTagBase
 from .. import NBTTag
 
-class StringTag(TagBase):
+class StringTag(SequenceTagBase):
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
+    def write(self, writer, write_type_id=True):
+        if write_type_id:
+            writer.write_ubyte(NBTTag.String)
+        if self.name != None:
+            name_encoded = self.name.encode('utf8')
+            writer.write_ushort(len(name_encoded))
+            writer.write(name_encoded)
+        encoded = self.value.encode('utf8')
+        writer.write_ushort(len(encoded))
+        writer.write(encoded)
 
     @staticmethod
     def type_id():
@@ -29,8 +40,9 @@ class StringTag(TagBase):
     def __bytes__(self):
         output = bytes(NBTTag.String)
         if self.name:
-            output += struct.pack('>H', len(self.name))
-            output += self.name.encode('utf8')
+            name_encoded = self.name.encode('utf8')
+            output += struct.pack('>H', len(name_encoded))
+            output += name_encoded
         encoded = self.value.encode('utf8')
         output += struct.pack('>H', len(encoded))
         output += encoded

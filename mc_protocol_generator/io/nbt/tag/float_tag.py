@@ -1,5 +1,5 @@
 import struct
-from . import TagBase
+from .tag_base import TagBase
 from .. import NBTTag
 
 class FloatTag(TagBase):
@@ -7,12 +7,21 @@ class FloatTag(TagBase):
         self.name = name
         self.value = value
 
+    def write(self, writer, write_type_id=True):
+        if write_type_id:
+            writer.write_ubyte(NBTTag.Float)
+        if self.name != None:
+            name_encoded = self.name.encode('utf8')
+            writer.write_ushort(len(name_encoded))
+            writer.write(name_encoded)
+        writer.write_float(self.value)
+
     @staticmethod
-    def type_id:
+    def type_id():
         return NBTTag.Float
 
     @staticmethod
-    def read(reader):
+    def read(reader, has_name=True, has_type_id=False):
         if has_type_id:
             type_id = reader.read_ubyte()
             if type_id != NBTTag.Float:

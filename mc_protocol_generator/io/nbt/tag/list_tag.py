@@ -1,45 +1,96 @@
 import struct
-from collections.abc import MutableSequence
-from . import (TagBase, EndTag, ByteTag, ShortTag, IntTag,
-               LongTag, FloatTag, DoubleTag, ByteArrayTag,
-               StringTag, CompoundTag, IntArrayTag, LongArrayTag)
-from .. import NBTTag
+from .collections_tag_base import MutableSequenceTagBase
+from .. import NBTTag, tag
 
 def read_list_helper(reader, type_id, length):
     if type_id == NBTTag.End:
-        raise Exception('Cannot have list of End tags')
+        if type_id != NBTTag.End:
+            raise Exception('Cannot have list of end tags')
+        return []
     elif type_id == NBTTag.Byte:
-        return [ByteTag.read(reader, False, False) for _ in range(length)]
+        return [tag.ByteTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.Short:
-        return [ShortTag.read(reader, False, False) for _ in range(length)]
+        return [tag.ShortTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.Int:
-        return [IntTag.read(reader, False, False) for _ in range(length)]
+        return [tag.IntTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.Long:
-        return [LongTag.read(reader, False, False) for _ in range(length)]
+        return [tag.LongTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.Float:
-        return [FloatTag.read(reader, False, False) for _ in range(length)]
+        return [tag.FloatTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.Double:
-        return [DoubleTag.read(reader, False, False) for _ in range(length)]
+        return [tag.DoubleTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.ByteArray:
-        return [ByteArrayTag.read(reader, False, False) for _ in range(length)]
+        return [tag.ByteArrayTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.String:
-        return [StringTag.read(reader, False, False) for _ in range(length)]
+        return [tag.StringTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.List:
-        return [ListTag.read(reader, False, False) for _ in range(length)]
+        return [tag.ListTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.Compound:
-        return [CompoundTag.read(reader, False, False) for _ in range(length)]
+        return [tag.CompoundTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.IntArray:
-        return [IntArrayTag.read(reader, False, False) for _ in range(length)]
+        return [tag.IntArrayTag.read(reader, False, False) for _ in range(length)]
     elif type_id == NBTTag.LongArray:
-        return [LongArrayTag.read(reader, False, False) for _ in range(length)]
+        return [tag.LongArrayTag.read(reader, False, False) for _ in range(length)]
     else:
         raise Exception
 
-class ListTag(TagBase, MutableSequence[TagBase]):
+def get_tag_type(type_id):
+    if type_id == NBTTag.End:
+        return tag.EndTag
+    elif type_id == NBTTag.Byte:
+        return tag.ByteTag
+    elif type_id == NBTTag.Short:
+        return tag.ShortTag
+    elif type_id == NBTTag.Int:
+        return tag.IntTag
+    elif type_id == NBTTag.Long:
+        return tag.LongTag
+    elif type_id == NBTTag.Float:
+        return tag.FloatTag
+    elif type_id == NBTTag.Double:
+        return tag.DoubleTag
+    elif type_id == NBTTag.ByteArray:
+        return tag.ByteArray
+    elif type_id == NBTTag.String:
+        return tag.StringTag
+    elif type_id == NBTTag.List:
+        return tag.ListTag
+    elif type_id == NBTTag.Compound:
+        return tag.CompoundTag
+    elif type_id == NBTTag.IntArray:
+        return tag.IntArrayTag
+    elif type_id == NBTTag.LongArray:
+        return tag.LongArrayTag
+    else:
+        raise Exception
+
+def check_item_type(item, target_type):
+    return isinstance(item, target_type)
+
+class ListTag(MutableSequenceTagBase):
     def __init__(self, name, value, list_type):
         self.name = name
+        if any(not isinstance(item, list_type) for item in value):
+            raise Exception(f'Invalid type in list')
         self.value = value
         self.list_type = list_type
+
+    def insert(self, index, object):
+        if not isinstance(value, self.list_type):
+            raise TypeError(f'Invalid item type. Expected type {self.list_type}, got {type(value)}')
+        super().insert(index, object)
+
+    def write(self, writer, write_type_id=True):
+        if write_type_id:
+            writer.write_ubyte(NBTTag.List)
+        if self.name != None:
+            name_encoded = self.name.encode('utf8')
+            writer.write_ushort(len(name_encoded))
+            writer.write(name_encoded)
+        writer.write_ubyte(self.list_type.type_id())
+        writer.write_int(len(self.value))
+        for t in self.value:
+            t.write(writer, False)
 
     @staticmethod
     def type_id():
@@ -59,26 +110,15 @@ class ListTag(TagBase, MutableSequence[TagBase]):
         list_type_id = NBTTag(reader.read_ubyte())
         list_length = reader.read_int()
         value = read_list_helper(reader, list_type_id, list_length)
-        return ListTag(name, value, list_type_id.get_type())
-
-    def __getitem__(self, key):
-        return self.value[key]
+        return ListTag(name, value, get_tag_type(list_type_id))
 
     def __setitem__(self, key, value):
         if not isinstance(value, self.list_type):
-            raise TypeError(f'Expected type {self.list_type}, got {type(value)}')
-        self.value[key] = value
+            raise TypeError(f'Invalid item type. Expected type {self.list_type}, got {type(value)}')
+        super().__setitem__(key, value)
 
-    def __delitem__(self, key):
-        del self.value[key]
-
-    def __len__(self):
-        return len(self.value)
-
-    def insert(self, index, object):
-        if not isinstance(value, self.list_type):
-            raise TypeError(f'Expected type {self.list_type}, got {type(value)}')
-        return self.value.insert(index, object)
+    def __repr__(self):
+        return f'ListTag(name={repr(self.name)}, value={repr(self.value)}, list_type={repr(self.list_type)})'
 
     def __bytes__(self):
         output = bytes(NBTTag.List)
@@ -86,7 +126,7 @@ class ListTag(TagBase, MutableSequence[TagBase]):
             name_encoded = self.name.encode('utf8')
             output += struct.pack('>H', len(name_encoded))
             output += name_encoded
-        output += 
-
-    def __repr__(self):
-        return f'ListTag(name={repr(self.name)}, value={repr(self.value)}, list_type={repr(self.list_type)})'
+        output += bytes(self.list_type.type_id())
+        output += struct.pack('>i', len(self.value))
+        output += b''.join(bytes(t) for t in self.value)
+        return output

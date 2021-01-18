@@ -1,5 +1,6 @@
 from struct import pack
 from uuid import UUID
+import types
 
 def write_boolean(writer, value):
     if not isinstance(value, bool):
@@ -97,25 +98,25 @@ def write_byte_array(writer, value):
 
 class DataWriter:
     def __new__(cls, writer):
-        writer.write_boolean = write_boolean
-        writer.write_byte = write_byte
-        writer.write_ubyte = write_ubyte
-        writer.write_short = write_short
-        writer.write_ushort = write_ushort
-        writer.write_int = write_int
-        writer.write_long = write_long
-        writer.write_float = write_float
-        writer.write_double = writer_double
-        writer.write_string = write_string
-        writer.write_chat = write_chat
-        writer.write_identifier = write_identifier
-        writer.write_varint = write_varint
-        writer.write_varlong = write_varlong
-        writer.write_entity_metadata = write_entity_metadata
-        writer.write_slot = write_slot
-        writer.write_nbt = write_nbt
-        writer.write_position = write_position
-        writer.write_angle = write_angle
-        writer.write_uuid = write_uuid
-        writer.write_byte_array = write_byte_array
+        writer.write_boolean = types.MethodType(write_boolean, writer)
+        writer.write_byte = types.MethodType(write_byte, writer)
+        writer.write_ubyte = types.MethodType(write_ubyte, writer)
+        writer.write_short = types.MethodType(write_short, writer)
+        writer.write_ushort = types.MethodType(write_ushort, writer)
+        writer.write_int = types.MethodType(write_int, writer)
+        writer.write_long = types.MethodType(write_long, writer)
+        writer.write_float = types.MethodType(write_float, writer)
+        writer.write_double = types.MethodType(write_double, writer)
+        writer.write_string = types.MethodType(write_string, writer)
+        writer.write_chat = types.MethodType(write_chat, writer)
+        writer.write_identifier = types.MethodType(write_identifier, writer)
+        writer.write_varint = types.MethodType(write_varint, writer)
+        writer.write_varlong = types.MethodType(write_varlong, writer)
+        writer.write_entity_metadata = types.MethodType(write_entity_metadata, writer)
+        writer.write_slot = types.MethodType(write_slot, writer)
+        writer.write_nbt = types.MethodType(write_nbt, writer)
+        writer.write_position = types.MethodType(write_position, writer)
+        writer.write_angle = types.MethodType(write_angle, writer)
+        writer.write_uuid = types.MethodType(write_uuid, writer)
+        writer.write_byte_array = types.MethodType(write_byte_array, writer)
         return writer
