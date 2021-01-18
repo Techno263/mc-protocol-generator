@@ -1,9 +1,14 @@
-from . import TagBase
+from .tag_base import TagBase
 from .. import NBTTag
 
 class EndTag(TagBase):
     def __init__(self):
-        pass
+        self.name = None
+        self.value = None
+
+    def write(self, writer, write_type_id=True):
+        if write_type_id:
+            writer.write_ubyte(NBTTag.End)
 
     @staticmethod
     def type_id():

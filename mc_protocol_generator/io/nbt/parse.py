@@ -1,4 +1,4 @@
-from .nbt_tag import NBTTag
+from . import NBTTag, tag
 
 def parse_nbt(reader, has_name=True, has_type_id=True):
     type_id = NBTTag(reader.read_ubyte())

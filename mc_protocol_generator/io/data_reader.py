@@ -1,6 +1,7 @@
 from struct import unpack
 from uuid import UUID
 from collections import namedtuple
+import types
 from .nbt import parse_nbt
 
 Rotation = namedtuple('Rotation', ['x', 'y', 'z'])
@@ -184,25 +185,25 @@ def read_byte_array(reader, length):
 
 class DataReader:
     def __new__(cls, reader):
-        reader.read_boolean = read_boolean
-        reader.read_byte = read_byte
-        reader.read_ubyte = read_ubyte
-        reader.read_short = read_short
-        reader.read_ushort = read_ushort
-        reader.read_int = read_int
-        reader.read_long = read_long
-        reader.read_float = read_float
-        reader.read_double = read_double
-        reader.read_string = read_string
-        reader.read_chat = read_chat
-        reader.read_identifier = read_identifier
-        reader.read_varint = read_varint
-        reader.read_varlong = read_varlong
-        reader.read_entity_metadata = read_entity_metadata
-        reader.read_slot = read_slot
-        reader.read_nbt = read_nbt
-        reader.read_position = read_position
-        reader.read_angle = read_angle
-        reader.read_uuid = read_uuid
-        reader.read_byte_array = read_byte_array
+        reader.read_boolean = types.MethodType(read_boolean, reader)
+        reader.read_byte = types.MethodType(read_byte, reader)
+        reader.read_ubyte = types.MethodType(read_ubyte, reader)
+        reader.read_short = types.MethodType(read_short, reader)
+        reader.read_ushort = types.MethodType(read_ushort, reader)
+        reader.read_int = types.MethodType(read_int, reader)
+        reader.read_long = types.MethodType(read_long, reader)
+        reader.read_float = types.MethodType(read_float, reader)
+        reader.read_double = types.MethodType(read_double, reader)
+        reader.read_string = types.MethodType(read_string, reader)
+        reader.read_chat = types.MethodType(read_chat, reader)
+        reader.read_identifier = types.MethodType(read_identifier, reader)
+        reader.read_varint = types.MethodType(read_varint, reader)
+        reader.read_varlong = types.MethodType(read_varlong, reader)
+        reader.read_entity_metadata = types.MethodType(read_entity_metadata, reader)
+        reader.read_slot = types.MethodType(read_slot, reader)
+        reader.read_nbt = types.MethodType(read_nbt, reader)
+        reader.read_position = types.MethodType(read_position, reader)
+        reader.read_angle = types.MethodType(read_angle, reader)
+        reader.read_uuid = types.MethodType(read_uuid, reader)
+        reader.read_byte_array = types.MethodType(read_byte_array, reader)
         return reader

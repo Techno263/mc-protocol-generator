@@ -1,15 +1,22 @@
 import struct
-from collections.abc import MutableSequence
-from . import TagBase, LongTag
+from .collections_tag_base import MutableSequenceTagBase
 from .. import NBTTag
 
-class LongArrayTag(TagBase, MutableSequence):
+class LongArrayTag(MutableSequenceTagBase):
     def __init__(self, name, value):
         self.name = name
         self.value = value
 
-    def insert(self, index, object):
-        self.value.insert(index, object)
+    def write(self, writer, write_type_id=True):
+        if writer_type_id:
+            writer.write_ubyte(NBTTag.LongArray)
+        if self.name != None:
+            name_encoded = self.name.encode('utf8')
+            writer.write_ushort(len(name_encoded))
+            writer.write(name_encoded)
+        writer.write_int(len(self.value))
+        for v in self.value:
+            writer.write_long(v)
 
     @staticmethod
     def type_id():
@@ -29,18 +36,6 @@ class LongArrayTag(TagBase, MutableSequence):
         length = reader.read_int()
         value = [LongTag.read(reader, False) for _ in range(length)]
         return LongArrayTag(name, value)
-    
-    def __getitem__(self, key):
-        return self.value[key]
-
-    def __setitem__(self, key, value):
-        self.value[key] = value
-
-    def __delitem__(self, key):
-        del self.value[key]
-
-    def __len__(self):
-        return len(self.value)
 
     def __repr__(self):
         return f'LongArrayTag(name={repr(self.name)}, value={repr(self.value)})'
@@ -52,5 +47,5 @@ class LongArrayTag(TagBase, MutableSequence):
             output += struct.pack('>H', len(name_encoded))
             output += name_encoded
         output += struct.pack('>i', len(self.value))
-        output += b''.join([bytes(tag) for tag in self.values])
+        output += b''.join([bytes(tag) for tag in self.value])
         return output

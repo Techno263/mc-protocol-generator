@@ -1,11 +1,20 @@
 import struct
-from . import TagBase
+from .tag_base import TagBase
 from .. import NBTTag
 
 class ByteTag(TagBase):
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
+    def write(self, writer, write_type_id=True):
+        if write_type_id:
+            writer.write_ubyte(NBTTag.Byte)
+        if self.name != None:
+            name_encoded = self.name.encode('utf8')
+            writer.write_ushort(len(name_encoded))
+            writer.write(name_encoded)
+        writer.write_byte(self.value)
 
     @staticmethod
     def type_id():

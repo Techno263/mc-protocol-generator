@@ -1,5 +1,5 @@
 import struct
-from . import TagBase
+from .tag_base import TagBase
 from .. import NBTTag
 
 class DoubleTag(TagBase):
@@ -7,9 +7,18 @@ class DoubleTag(TagBase):
         self.name = name
         self.value = value
 
+    def write(self, writer, write_type_id=True):
+        if write_type_id:
+            writer.write_ubyte(NBTTag.Double)
+        if self.name != None:
+            name_encoded = self.name.encode('utf8')
+            writer.write_ushort(len(name_encoded))
+            writer.write(name_encoded)
+        writer.write_double(self.value)
+
     @staticmethod
     def type_id():
-        return NBTTag
+        return NBTTag.Double
 
     @staticmethod
     def read(reader, has_name=True, has_type_id=False):
