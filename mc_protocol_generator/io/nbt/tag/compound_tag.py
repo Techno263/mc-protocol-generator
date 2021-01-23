@@ -1,6 +1,6 @@
 import struct
 from .collections_tag_base import MutableMappingTagBase
-from .. import NBTTag, tag, parse_nbt
+from .. import NBTTag, tag
 
 class CompoundTag(MutableMappingTagBase):
     def __init__(self, name, value):
@@ -24,6 +24,7 @@ class CompoundTag(MutableMappingTagBase):
 
     @staticmethod
     def read(reader, has_name=True, has_type_id=False):
+        from .. import parse_nbt
         if has_type_id:
             type_id = reader.read_ubyte()
             if type_id != NBTTag.Compound:
