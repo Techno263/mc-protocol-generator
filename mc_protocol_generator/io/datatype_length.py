@@ -71,3 +71,6 @@ def slot_size(slot):
 
 def nbt_size(nbt):
     raise NotImplementedError()
+
+def byte_array_size(byte_array):
+    return len(byte_array)

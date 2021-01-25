@@ -1,7 +1,20 @@
 from abc import ABC, abstractmethod
 
-class DatatypeBase(ABC):
+class Base(ABC):
+    def __init__(self, name):
+        self.name = name
 
-    @staticmethod
-    def parse(options):
-        print(options)
+    def generate_init_code(self):
+        return f'self.{self.name} = {self.name}'
+
+    @abstractmethod
+    def generate_read_code(self, reader_name):
+        pass
+
+    @abstractmethod
+    def generate_write_code(self, writer_name):
+        pass
+
+    @abstractmethod
+    def generate_len_code(self, len_util_name):
+        pass
