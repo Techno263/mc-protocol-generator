@@ -1,9 +1,12 @@
 from .base import Base
 
 class Buffer(Base):
-    def generate_read_code(self, reader_name):
-        return f'{self.name}_len = {reader_name}.read_varint()\n'
-               f'{self.name} = {reader_name}.read_byte_array({self.name}_len)'
+    def generate_read_code(self, reader_name, assignment=True):
+        if assignment:
+            return (f'{self.name}_len = {reader_name}.read_varint()\n'
+                    f'{self.name} = {reader_name}.read_byte_array({self.name}_len)')
+        else:
+            return 
     
     def generate_write_code(self, writer_name):
         return f'{writer_name}.write_byte_array(self.{self.name})'

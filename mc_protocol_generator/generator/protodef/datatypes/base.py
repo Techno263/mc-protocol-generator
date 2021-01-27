@@ -8,7 +8,7 @@ class Base(ABC):
         return f'self.{self.name} = {self.name}'
 
     @abstractmethod
-    def generate_read_code(self, reader_name):
+    def generate_read_code(self, reader_name, assignment=True):
         pass
 
     @abstractmethod

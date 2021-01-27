@@ -45,6 +45,6 @@ class Array(Base):
         self.count_type = get_type(count_type)(f'{self.name}_count')
         self.array_type = get_type(array_type)(f'{self.name}_element')
 
-    def generate_read_code(self, reader_name):
+    def generate_read_code(self, reader_name, assignment=True):
         return (f'{self.count_type.generate_read_code(reader_name)}\n'
                 f'{self.name} = [ for _ in range({self.name}_count)]'
