@@ -1,4 +1,4 @@
-boolean_size = 1
+bool_size = 1
 byte_size = 1
 ubyte_size = 1
 short_size = 2
@@ -10,6 +10,10 @@ double_size = 8
 position_size = 8
 angle_size = 1
 uuid_size = 16
+
+@property
+def bool_size():
+    return 1
 
 def string_size(string):
     encode_length = len(string.encode('utf8'))

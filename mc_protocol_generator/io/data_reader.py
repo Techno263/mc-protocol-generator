@@ -8,7 +8,7 @@ Rotation = namedtuple('Rotation', ['x', 'y', 'z'])
 VillagerData = namedtuple('VillagerData', ['type', 'profession', 'level'])
 Particle = namedtuple('Particle', ['id', 'data'])
 
-def read_boolean(reader):
+def read_bool(reader):
     return bool(unpack('>B', reader.read(1))[0])
 
 def read_byte(reader):

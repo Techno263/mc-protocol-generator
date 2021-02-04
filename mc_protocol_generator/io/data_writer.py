@@ -2,7 +2,7 @@ from struct import pack
 from uuid import UUID
 import types
 
-def write_boolean(writer, value):
+def write_bool(writer, value):
     if not isinstance(value, bool):
         value = bool(value)
     writer.write(pack('>B', value))

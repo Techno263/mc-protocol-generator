@@ -1,0 +1,22 @@
+class {{class_name}}:
+    def __init__(self, {{init_args}}):
+        {{init_body}}
+
+    def __len__(self):
+        {{len_body}}
+    
+    def __repr__(self):
+        {{repr_body}}
+
+    def __bytes__(self):
+        buffer = io.BytesIO()
+        self.write_packet(buffer)
+        buffer.seek(0, 0)
+        return buffer.read()
+
+    def write_packet(self, writer):
+        {{write_packet_body}}
+
+    @staticmethod
+    def read_packet(reader):
+        {{read_packet_body}}
