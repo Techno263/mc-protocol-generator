@@ -25,12 +25,28 @@ class MatchesElement:
             tooltip = None
         return MatchesElement(match, tooltip)
 
-class TabComplete:
+class TabCompleteClientbound:
     def __init__(self, id, start, length, matches):
         self.id = id
         self.start = start
         self.length = length
         self.matches = matches
+
+    #@staticproperty
+    def name():
+        return 'Tab-Complete (clientbound)'
+
+    #@staticproperty
+    def packet_id():
+        return 0x0f
+
+    #@staticproperty
+    def state():
+        return 'Play'
+
+    #@staticproperty
+    def bound_to():
+        return 'Client'
 
     def __len__(self):
         return dl.varint_size(self.id) + \
@@ -39,13 +55,18 @@ class TabComplete:
             sum(len(match) for match in matches)
 
     def __repr__(self):
-        pass
+        return f'TabCompleteClientbound('
+               f'id={self.id}, ' \
+               f'start={self.start}, ' \
+               f'length={self.length}, ' \
+               f'matches={self.matches})'
 
     def write_packet(self, writer):
-        writer.write_varint(packet_id)
+        writer.write_varint(self.packet_id())
         writer.write_varint(self.id)
         writer.write_varint(self.start)
         writer.write_varint(self.length)
+        writer.write_varint(len(self.matches))
         for match in self.matches:
             match.write_data(writer)
         

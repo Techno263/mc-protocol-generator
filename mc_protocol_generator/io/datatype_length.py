@@ -11,10 +11,6 @@ position_size = 8
 angle_size = 1
 uuid_size = 16
 
-@property
-def bool_size():
-    return 1
-
 def string_size(string):
     encode_length = len(string.encode('utf8'))
     return varint_length(encode_length) + encode_length

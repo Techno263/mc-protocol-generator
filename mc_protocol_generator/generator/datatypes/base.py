@@ -4,24 +4,26 @@ class Base(ABC):
     def __init__(self, name):
         self.name = name
 
-    def generate_init_code(self):
-        return f'self.{self.name} = {self.name}'
+    def imports(self):
+        return ''
 
-    #@abstractmethod
-    def generate_read_code(self, reader_name, assignment=True):
-        pass
+    def len_str(self, sizer_name):
+        return ''
 
-    #@abstractmethod
-    def generate_write_code(self, writer_name):
-        pass
+    def repr_str(self):
+        return ''
 
-    #@abstractmethod
-    def generate_len_code(self, len_util_name):
-        pass
+    def write_str(self, writer_name):
+        return ''
 
-    def generate_extra_code(self):
+    def read_str(self, reader_name):
+        return ''
+
+    @abstractmethod
+    def update_class_str(self, class_str, context):
         pass
 
     @staticmethod
+    @abstractmethod
     def from_protocol_data(data):
         pass
