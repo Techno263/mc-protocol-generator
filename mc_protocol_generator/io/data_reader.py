@@ -114,12 +114,12 @@ def read_entity_metadata(reader):
         elif value_type == 4:
             metadata[index] = reader.read_chat()
         elif value_type == 5:
-            if reader.read_boolean():
+            if reader.read_bool():
                 metadata[index] = reader.read_chat()
         elif value_type == 6:
             metadata[index] = reader.read_slot()
         elif value_type == 7:
-            metadata[index] = reader.read_boolean()
+            metadata[index] = reader.read_bool()
         elif value_type == 8:
             metadata[index] = Rotation(
                 reader.read_float(),
@@ -129,12 +129,12 @@ def read_entity_metadata(reader):
         elif value_type == 9:
             metadata[index] = reader.read_position()
         elif value_type == 10:
-            if reader.read_boolean():
+            if reader.read_bool():
                 metadata[index] = reader.read_position()
         elif value_type == 11:
             metadata[index] = reader.read_varint()
         elif value_type == 12:
-            if reader.read_boolean():
+            if reader.read_bool():
                 metadata[index] = reader.read_uuid()
         elif value_type == 13:
             metadata[index] = reader.read_varint()
@@ -149,7 +149,7 @@ def read_entity_metadata(reader):
                 reader.read_varint()
             )
         elif value_type == 17:
-            if reader.read_boolean():
+            if reader.read_bool():
                 metadata[index] = reader.read_varint()
         elif value_type == 18:
             metadata[index] = reader.read_varint()
@@ -185,7 +185,7 @@ def read_byte_array(reader, length):
 
 class DataReader:
     def __new__(cls, reader):
-        reader.read_boolean = types.MethodType(read_boolean, reader)
+        reader.read_bool = types.MethodType(read_bool, reader)
         reader.read_byte = types.MethodType(read_byte, reader)
         reader.read_ubyte = types.MethodType(read_ubyte, reader)
         reader.read_short = types.MethodType(read_short, reader)

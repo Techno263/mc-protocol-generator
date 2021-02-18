@@ -1,37 +1,30 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from ast import (Attribute, Name, Load)
 
 class Angle(Base):
 
     def __init__(self, name):
         super().__init__(name)
 
-    def len_str(self, sizer_name):
-        return '%s.angle_size{{len_body}}' % (sizer_name)
+    def get_len_node(self, sizer_name, object_override=None, node_override=None):
+        return Attribute(
+            value=Name(
+                id=sizer_name,
+                ctx=Load(),
+            ),
+            attr='angle_size',
+            ctx=Load()
+        )
 
-    def repr_str(self):
-        field_name = format_field_name(self.name)
-        return '%s={repr(self.%s)}{{repr_body}}' % (field_name, field_name)
+    def get_repr_body_nodes(self, prefix):
+        pass
 
-    def write_str(self, writer_name):
-        field_name = format_field_name(self.name)
-        return '%s.write_angle(self.%s);{{write_packet_body}}' % (writer_name, field_name)
+    def get_write_node(self, writer_name):
+        pass
 
-    def read_str(self, reader_name):
-        field_name = format_field_name(self.name)
-        return '%s = %s.read_angle();{{read_packet_body}}' % (field_name, reader_name)
-
-    def update_class_str(self, class_str, context):
-        field_name = format_field_name(self.name)
-        return replace_string(class_str,
-            {
-                '{{init_args}}': '%s{{init_args}}' % (field_name),
-                '{{init_body}}': '%s = %s; {{init_body}}' % (field_name, field_name),
-                '{{len_body}}': self.len_str(context.sizer_name),
-                '{{repr_body}}': self.repr_str(),
-                '{{write_packet_body}}': self.write_str(context.writer_name),
-                '{{read_packet_body}}': self.read_str(context.reader_name)
-            })
+    def get_read_node(self, reader_name):
+        pass
 
     @staticmethod
     def from_protocol_data(data):

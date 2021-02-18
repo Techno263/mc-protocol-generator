@@ -1,4 +1,4 @@
-class MatchesElement:
+class Match:
     def __init__(self, match, tooltip):
         self.match = match
         self.tooltip = tooltip
@@ -23,43 +23,30 @@ class MatchesElement:
             tooltip = reader.read_chat()
         else:
             tooltip = None
-        return MatchesElement(match, tooltip)
+        return Match(match, tooltip)
 
 class TabCompleteClientbound:
+    name = 'Tab-Complete (clientbound)'
+    id = 0x0f
+    state = 'play'
+    bound_to = 'client'
+
     def __init__(self, id, start, length, matches):
         self.id = id
         self.start = start
         self.length = length
         self.matches = matches
 
-    #@staticproperty
-    def name():
-        return 'Tab-Complete (clientbound)'
-
-    #@staticproperty
-    def packet_id():
-        return 0x0f
-
-    #@staticproperty
-    def state():
-        return 'Play'
-
-    #@staticproperty
-    def bound_to():
-        return 'Client'
-
     def __len__(self):
-        return dl.varint_size(self.id) + \
-            dl.varint_size(self.start) + \
-            dl.varint_size(self.length) + \
-            sum(len(match) for match in matches)
+        return (
+            dl.varint_size(self.id) +
+            dl.varint_size(self.start) +
+            dl.varint_size(self.length) +
+            sum(len(item) for item in self.matches)
+        )
 
     def __repr__(self):
-        return f'TabCompleteClientbound('
-               f'id={self.id}, ' \
-               f'start={self.start}, ' \
-               f'length={self.length}, ' \
-               f'matches={self.matches})'
+        return f'TabCompleteClientbound(id={self.id}, start={self.start}, length={self.length}, matches={self.matches})'
 
     def write_packet(self, writer):
         writer.write_varint(self.packet_id())
@@ -75,6 +62,6 @@ class TabCompleteClientbound:
         id = reader.read_varint()
         start = reader.read_varint()
         length = reader.read_varint()
-        matches = [MatchesElement.read_data(reader)
+        matches = [Match.read_data(reader)
                    for _ in range(reader.read_varint())]
         return TabComplete(id, start, length, matches)

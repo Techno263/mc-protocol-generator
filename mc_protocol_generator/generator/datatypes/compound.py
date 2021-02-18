@@ -1,6 +1,8 @@
 from .base import Base
-from mc_protocol_generator.generator.util import replace_string, format_class_name, format_field_name
+from mc_protocol_generator.generator.util import format_class_name
 from ..code_generator_context import CodeGeneratorContext
+from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef,
+                 Assign, Store, arguments, arg, BinOp, Add, Return)
 
 compound_class_template = '''class {{class_name}}
     def __init__(self{{init_args}}):
@@ -20,62 +22,197 @@ compound_class_template = '''class {{class_name}}
         {{reader_body}}
 '''
 
+class_sizer_name = 'dl'
+class_writer_name = 'writer'
+class_reader_name = 'reader'
+
 class Compound(Base):
     def __init__(self, name, fields):
         super().__init__(name)
         self.fields = fields
 
-    def update_class_str(self, class_str, context):
-        compound_class_name = format_class_name(self.name + ' Compound')
-        compound_field_names = [format_field_name(f.name) for f in self.fields]
-        compound_class_str = compound_class_template
-        compound_class_str = replace_string(compound_class_str,
-            {
-                '{{class_name}}': format_class_name(self.name),
-                '{{repr_body}}': '({{repr_body}}' % (compound_class_name),
-                '{{writer_name}}': writer_name,
-                '{{reader_name}}': reader_name
-            })
-        comp_gen_ctxt = CodeGeneratorContext(context.reader_name,
-            context.writer_name, context.sizer_name, 0)
-        for field_index, field in enumerate(self.fields):
-            comp_gen_ctxt.field_index = field_index
-            len_body_str = '{{len_body}}'
-            repr_body_str = '{{repr_body}}'
-            if field_index != 0:
-                len_body_str = ' + {{len_body}}'
-                repr_body_str = ', {{repr_body}}'
-            compound_class_str = replace_string(compound_class_str,
-                {
-                    '{{init_args}}': ', {{init_args}}',
-                    '{{init_body}}': 'self.{{init_body}}',
-                    '{{len_body}}': len_body_str,
-                    '{{repr_body}}': repr_body_str
-                })
-            compound_class_str = field.update_class_str(compound_class_str, comp_gen_ctxt)
-        compound_class_str = replace_string(compound_class_str,
-            {
-                '{{init_args}}': '',
-                '{{init_body}}': '',
-                '{{len_body}}': '',
-                '{{repr_body}}': ')',
-                '{{write_packet_body}}': '',
-                '{{read_packet_body}}': f'return {compound_class_name}({compound_field_names})'
-            })
-        field_name = format_field_name(self.name)
-        len_body_str = 'len(self.%s){{len_body}}'
-        repr_body_str = '%s={self.%s}{{repr_body}}' % (field_name, field_name)
-        if field_index != 0:
-            len_body_str = ' + ' + len_body_str
-            repr_body_str = ', ' + repr_body_str
-        return replace_string(class_str,
-            {
-                '{{init_args}}': ', %s{{init_args}}' % (field_name),
-                '{{init_body}}': 'self.%s = %s; {{init_body}}' % (field_name, field_name),
-                '{{len_body}}': len_body_str,
-                '{{repr_body}}': repr_body_str,
-                '{{write_packet_body}}': 'self.'
-            })
+    def get_len_node(self, sizer_name, object_override=None, node_override=None):
+        if object_override == None:
+            obj = Name(
+                id='self',
+                ctx=Load()
+            )
+        else:
+            obj = value_override
+        if node_override == None:
+            node = Attribute(
+                value=obj,
+                attr=self.field_name,
+                ctx=Load()
+            )
+        else:
+            node = node_override
+        return Call(
+            func=Name(
+                id='len',
+                ctx=Load()
+            ),
+            args=[node],
+            keywords=[]
+        )
+
+    def get_repr_body_nodes(self, prefix):
+        pass
+
+    def get_write_node(self, writer_name):
+        pass
+
+    def get_read_node(self, reader_name):
+        pass
+
+    def _get_class_init_arg_nodes(self):
+        return [
+            arg(arg=field.field_name)
+            for field in self.fields
+        ]
+
+    def _get_class_init_body_nodes(self):
+        return [
+            Assign(
+                targets=[
+                    Attribute(
+                        value=Name(
+                            id='self',
+                            ctx=Load()
+                        ),
+                        attr=field.field_name,
+                        ctx=Store()
+                    )
+                ],
+                value=Name(
+                    id=field.field_name,
+                    ctx=Load()
+                )
+            )
+            for field in self.fields
+        ]
+
+    def _get_class_len_body_nodes(self):
+        if len(self.fields) == 0:
+            return [Return(value=Constant(value=0, kind=None))]
+        elif len(self.fields) == 1:
+            return [Return(value=self.fields[0].get_len_node(class_sizer_name))]
+        bin_op = BinOp(
+            left=self.fields[0].get_len_node(class_sizer_name),
+            op=Add(),
+            right=self.fields[1].get_len_node(class_sizer_name)
+        )
+        for field in self.fields[2:]:
+            bin_op = BinOp(
+                left=bin_op,
+                op=Add(),
+                right=field.get_len_node(class_sizer_name)
+            )
+        return [Return(value=bin_op)]
+
+    def _get_class_repr_body_nodes(self):
+        from ast import Pass
+        return [Pass()]
+
+    def _get_class_write_data_body_nodes(self):
+        from ast import Pass
+        return [Pass()]
+
+    def _get_class_read_data_body_nodes(self):
+        from ast import Pass
+        return [Pass()]
+
+    def get_module_body_nodes(self):
+        return [
+            node
+            for field in self.fields
+            if (nodes := field.get_module_body_nodes()) != None
+            for node in nodes
+        ] + [
+            ClassDef(
+                name=format_class_name(self.name),
+                bases=[],
+                keywords=[],
+                body=[
+                    FunctionDef(
+                        name='__init__',
+                        args=arguments(
+                            posonlyargs=[],
+                            args=[
+                                arg(arg='self'),
+                                *self._get_class_init_arg_nodes()
+                            ],
+                            vararg=None,
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=self._get_class_init_body_nodes(),
+                        decorator_list=[],
+                        returns=None,
+                        type_comment=None
+                    ),
+                    FunctionDef(
+                        name='__len__',
+                        args=arguments(
+                            posonlyargs=[],
+                            args=[arg(arg='self', annotation=None, type_comment=None)],
+                            vararg=None,
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            kwarg=None,
+                            defaults=[]
+                        ),
+                        body=self._get_class_len_body_nodes(),
+                        decorator_list=[],
+                        returns=None,
+                        type_comment=None
+                    ),
+                    FunctionDef(
+                        name='__repr__',
+                        args=arguments(
+                            posonlyargs=[],
+                                args=[arg(arg='self', annotation=None, type_comment=None)],
+                                vararg=None,
+                                kwonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                        ),
+                        body=self._get_class_repr_body_nodes(),
+                        decorator_list=[],
+                        returns=None,
+                        type_comment=None
+                    ),
+                    FunctionDef(
+                        name='write_data',
+                        args=arguments(
+                            posonlyargs=[],
+                            args=[arg(arg='self'), arg(arg='writer')],
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            defaults=[],
+                        ),
+                        body=self._get_class_write_data_body_nodes(),
+                        decorator_list=[]
+                    ),
+                    FunctionDef(
+                        name='read_data',
+                        args=arguments(
+                            posonlyargs=[],
+                            args=[arg(arg='reader')],
+                            kwonlyargs=[],
+                            kw_defaults=[],
+                            defaults=[],
+                        ),
+                        body=self._get_class_read_data_body_nodes(),
+                        decorator_list=[Name(id='staticmethod', ctx=Load())]
+                    )
+                ],
+                decorator_list=[]
+            )
+        ]
 
     @staticmethod
     def from_protocol_data(data):

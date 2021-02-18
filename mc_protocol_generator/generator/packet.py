@@ -1,80 +1,12 @@
-from enum import Enum, EnumMeta
+from ast import (Module, ClassDef, Assign, Name, Store, Constant,
+    FunctionDef, arguments, arg, Attribute, Load, Return, BinOp, Add,
+    JoinedStr, Expr, Call, unparse, fix_missing_locations, Pass)
+from mc_protocol_generator.generator.util import format_class_name
+from black import Mode, format_str
 from .datatypes import (Angle, Array, Bool, Byte, Chat, Compound, Double,
                         EntityMetadata, Float, Identifier, Int, Long, NBT,
                         Option, Position, Short, Slot, String, Switch, UByte,
                         UShort, UUID, VarInt, VarLong)
-from .code_generator_context import CodeGeneratorContext
-import re
-from mc_protocol_generator.generator.util import replace_string, format_class_name, format_field_name
-from black import Mode, format_str
-
-writer_name = 'writer'
-reader_name = 'reader'
-sizer_name = 'dl'
-packet_template = '''{{imports}}
-
-{{util_block}}
-
-class {{class_name}}:
-    def __init__(self{{init_args}}):
-        {{init_body}}
-
-    @staticproperty
-    def name():
-        {{name_body}}
-
-    @staticproperty
-    def packet_id():
-        {{packet_id_body}}
-
-    @staticproperty
-    def state():
-        {{state_body}}
-
-    @staticproperty
-    def bound_to():
-        {{bound_to_body}}
-
-    def __len__(self):
-        {{len_body}}
-    
-    def __repr__(self):
-        {{repr_body}}
-
-    def __bytes__(self):
-        buffer = io.BytesIO()
-        self.write_packet(buffer)
-        buffer.seek(0, 0)
-        return buffer.read()
-
-    def write_packet(self, {{writer_name}}):
-        {{write_packet_body}}
-
-    @staticmethod
-    def read_packet({{reader_name}}):
-        {{read_packet_body}}
-'''
-
-class StrGetterEnumMeta(EnumMeta):
-    def __getitem__(cls, element):
-        element = element.upper()
-        return super().__getitem__(element)
-
-class BoundTo(Enum, metaclass=StrGetterEnumMeta):
-    CLIENT = 0
-    SERVER = 1
-
-    def __str__(self):
-        return self.name.lower()
-
-class State(Enum, metaclass=StrGetterEnumMeta):
-    HANDSHAKING = 0
-    STATUS = 1
-    LOGIN = 2
-    PLAY = 3
-
-    def __str__(self):
-        return self.name.lower()
 
 def parse_field(field_data):
     data_type = field_data['type']
@@ -131,7 +63,6 @@ def parse_field(field_data):
     else:
         raise Exception("Unable to parse type:", data_type)
 
-
 class Packet:
     def __init__(self, name, id, state, bound_to, fields):
         self.name = name
@@ -140,49 +71,295 @@ class Packet:
         self.bound_to = bound_to
         self.fields = fields
 
-    def get_code_str(self):
-        file_text = packet_template
-        class_name = format_class_name(self.name)
-        file_text = replace_string(file_text,
-            {
-                '{{class_name}}': class_name,
-                '{{name_body}}': "return '%s'" % (self.name),
-                '{{packet_id_body}}': 'return %s' % (self.id),
-                '{{state_body}}': "return '%s'" % (str(self.state)),
-                '{{bound_to_body}}': "return '%s'" % (str(self.bound_to)),
-                '{{len_body}}': 'return %s.varint_size(self.packet_id()){{len_body}}' % (sizer_name),
-                '{{repr_body}}': "return f'%s({{repr_body}}'" % (class_name),
-                '{{write_packet_body}}': '%s.write_varint(self.packet_id());{{write_packet_body}}' % (writer_name),
-                '{{writer_name}}': writer_name,
-                '{{reader_name}}': reader_name
-            })
-        code_gen_ctxt = CodeGeneratorContext(reader_name, writer_name, sizer_name, 0)
-        for field_index, field in enumerate(self.fields):
-            code_gen_ctxt.field_index = field_index
-            repr_body_str = '{{repr_body}}'
-            if field_index != 0:
-                repr_body_str = ', ' + repr_body_str
-            file_text = replace_string(file_text,
-                {
-                    '{{init_args}}': ', {{init_args}}',
-                    '{{init_body}}': 'self.{{init_body}}',
-                    '{{len_body}}': ' + {{len_body}}',
-                    '{{repr_body}}': repr_body_str
-                })
-            file_text = field.update_class_str(file_text, code_gen_ctxt)
-        field_names = ', '.join(format_field_name(f.name) for f in self.fields)
-        file_text = replace_string(file_text,
-            {
-                '{{imports}}': '',
-                '{{util_block}}': '',
-                '{{init_args}}': '',
-                '{{init_body}}': '',
-                '{{len_body}}': '',
-                '{{repr_body}}': ')',
-                '{{write_packet_body}}': '',
-                '{{read_packet_body}}': f'return {class_name}({field_names})'
-            })
-        file_text = file_text.strip()
+    @property
+    def class_name(self):
+        return format_class_name(self.name)
+
+    def get_init_args(self):
+        args, opt_args = zip(*[field.get_init_args() for field in self.fields])
+        args = [arg for arg_list in args for arg in arg_list]
+        opt_args = tuple(
+            map(
+                list,
+                zip(*[opt_arg for opt_arg_list in opt_args for opt_arg in opt_arg_list])
+            )
+        )
+        opt_args, defaults = opt_args if len(opt_args) == 2 else ([], [])
+        args = [arg(arg='self', annotation=None, type_comment=None)] + args + opt_args
+        temp = arguments(
+            posonlyargs=[],
+            args=args,
+            vararg=None,
+            kwonlyargs=[],
+            kw_defaults=[],
+            kwarg=None,
+            defaults=defaults
+        )
+        return temp
+
+    def get_init_body_nodes(self):
+        return [
+            node
+            for field in self.fields
+            for node in field.get_init_body_nodes()
+        ]
+
+    def get_len_body_nodes(self, sizer_name):
+        if len(self.fields) == 0:
+            return [Return(value=Constant(value=0, kind=None))]
+        elif len(self.fields) == 1:
+            return [Return(value=self.fields[0].get_len_node(sizer_name))]
+        bin_op = BinOp(
+            left=self.fields[0].get_len_node(sizer_name),
+            op=Add(),
+            right=self.fields[1].get_len_node(sizer_name)
+        )
+        for field in self.fields[2:]:
+            bin_op = BinOp(
+                left=bin_op,
+                op=Add(),
+                right=field.get_len_node(sizer_name)
+            )
+        return [Return(value=bin_op)]
+
+    def get_repr_body_nodes(self):
+        from ast import Pass
+        return [Pass()]
+        def get_prefix(index):
+            if index == 0:
+                return self.class_name + '('
+            return ', '
+        return [
+            Return(
+                value=JoinedStr(
+                    values=[
+                        node
+                        for index, field in enumerate(self.fields)
+                        for node in field.get_repr_body_nodes(get_prefix(index))
+                    ]
+                )
+            )
+        ]
+
+    def get_write_packet_body_nodes(self, writer_name):
+        from ast import Pass
+        return [Pass()]
+        return [
+            Expr(
+                value=Call(
+                    func=Attribute(
+                        value=Name(id=writer_name, ctx=Load()),
+                        attr='write_varint',
+                        ctx=Load()
+                    ),
+                    args=[
+                        Attribute(
+                            value=Name(id='self', ctx=Load()),
+                            attr='id',
+                            ctx=Load()
+                        )
+                    ],
+                    keywords=[]
+                )
+            )
+        ] + [
+            field.get_write_node(writer_name)
+            for field in self.fields
+        ]
+
+    def get_read_packet_body_nodes(self, reader_name):
+        from ast import Pass
+        return [Pass()]
+        return [
+            field.get_read_node(reader_name)
+            for field in self.fields
+        ] + [
+            Return(
+                value=Call(
+                    func=Name(id=self.class_name, ctx=Load()),
+                    args=[
+                        Name(id=field.field_name, ctx=Load())
+                        for field in self.fields
+                    ],
+                    keywords=[]
+                )
+            )
+        ]
+
+    def get_module_body_nodes(self):
+        return [
+            node
+            for field in self.fields
+            if (nodes := field.get_module_body_nodes()) != None
+            for node in nodes
+        ]
+
+    def test_get_packet_ast_node(self):
+        sizer_name = 'dl'
+        writer_name = 'writer'
+        reader_name = 'reader'
+        module = Module(
+            body=[
+                *self.get_module_body_nodes(),
+                ClassDef(
+                    name=self.class_name,
+                    bases=[],
+                    keywords=[],
+                    body=[
+                        Assign(
+                            targets=[Name(id='name', ctx=Store())],
+                            value=Constant(value=self.name, kind=None),
+                            type_comment=None
+                        ),
+                        Assign(
+                            targets=[Name(id='id', ctx=Store())],
+                            value=Constant(value=self.id, kind=None),
+                            type_comment=None
+                        ),
+                        Assign(
+                            targets=[Name(id='state', ctx=Store())],
+                            value=Constant(value=self.state, kind=None),
+                            type_comment=None
+                        ),
+                        Assign(
+                            targets=[Name(id='bound_to', ctx=Store())],
+                            value=Constant(value=self.bound_to, kind=None),
+                            type_comment=None
+                        ),
+                        FunctionDef(
+                            name='__init__',
+                            args=self.get_init_args(),
+                            body=self.get_init_body_nodes(),
+                            decorator_list=[],
+                            returns=None,
+                            type_comment=None
+                        )
+                    ],
+                    decorator_list=[]
+                )
+            ],
+            type_ignores=[]
+        )
+        fix_missing_locations(module)
+        return module
+
+    def get_packet_ast_node(self):
+        sizer_name = 'dl'
+        writer_name = 'writer'
+        reader_name = 'reader'
+        module = Module(
+            body=[
+                *self.get_module_body_nodes(),
+                ClassDef(
+                    name=self.class_name,
+                    bases=[],
+                    keywords=[],
+                    body=[
+                        Assign(
+                            targets=[Name(id='name', ctx=Store())],
+                            value=Constant(value=self.name, kind=None),
+                            type_comment=None
+                        ),
+                        Assign(
+                            targets=[Name(id='id', ctx=Store())],
+                            value=Constant(value=self.id, kind=None),
+                            type_comment=None
+                        ),
+                        Assign(
+                            targets=[Name(id='state', ctx=Store())],
+                            value=Constant(value=self.state, kind=None),
+                            type_comment=None
+                        ),
+                        Assign(
+                            targets=[Name(id='bound_to', ctx=Store())],
+                            value=Constant(value=self.bound_to, kind=None),
+                            type_comment=None
+                        ),
+                        FunctionDef(
+                            name='__init__',
+                            args=self.get_init_args(),
+                            body=self.get_init_body_nodes(),
+                            decorator_list=[],
+                            returns=None,
+                            type_comment=None
+                        ),
+                        FunctionDef(
+                            name='__len__',
+                            args=arguments(
+                                posonlyargs=[],
+                                args=[arg(arg='self', annotation=None, type_comment=None)],
+                                vararg=None,
+                                kwonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=self.get_len_body_nodes(sizer_name),
+                            decorator_list=[],
+                            returns=None,
+                            type_comment=None
+                        ),
+                        FunctionDef(
+                            name='__repr__',
+                            args=arguments(
+                                posonlyargs=[],
+                                args=[arg(arg='self', annotation=None, type_comment=None)],
+                                vararg=None,
+                                kwonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=self.get_repr_body_nodes(),
+                            decorator_list=[],
+                            returns=None,
+                            type_comment=None
+                        ),
+                        FunctionDef(
+                            name='write_packet',
+                            args=arguments(
+                                posonlyargs=[],
+                                args=[
+                                    arg(arg='self', annotation=None, type_comment=None),
+                                    arg(arg='writer', annotation=None, type_comment=None)
+                                ],
+                                vararg=None,
+                                kwonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=self.get_write_packet_body_nodes(writer_name),
+                            decorator_list=[],
+                            returns=None,
+                            type_comment=None
+                        ),
+                        FunctionDef(
+                            name='read_packet',
+                            args=arguments(
+                                posonlyargs=[],
+                                args=[arg(arg='reader', annotation=None, type_comment=None)],
+                                vararg=None,
+                                kwonlyargs=[],
+                                kw_defaults=[],
+                                kwarg=None,
+                                defaults=[]
+                            ),
+                            body=self.get_read_packet_body_nodes(reader_name),
+                            decorator_list=[Name(id='staticmethod', ctx=Load())],
+                            returns=None,
+                            type_comment=None
+                        )
+                    ],
+                    decorator_list=[]
+                )
+            ],
+            type_ignores=[]
+        )
+        fix_missing_locations(module)
+        return module
+
+    def get_packet_code(self):
         black_mode = Mode(
             target_versions=set(),
             line_length=88,
@@ -190,13 +367,15 @@ class Packet:
             string_normalization=False,
             experimental_string_processing=False
         )
-        return format_str(file_text, mode=black_mode)
-
+        return format_str(unparse(self.get_packet_ast_node()), mode=black_mode)
+    
     @staticmethod
     def parse_packet_data(packet_data):
         name = packet_data['name']
         id = packet_data['id']
-        state = State[packet_data['state']]
-        bound_to = BoundTo[packet_data['bound_to']]
+        state = packet_data['state']
+        bound_to = packet_data['bound_to']
+        #state = State[packet_data['state']]
+        #bound_to = BoundTo[packet_data['bound_to']]
         fields = [parse_field(field) for field in packet_data['fields']]
         return Packet(name, id, state, bound_to, fields)

@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from ast import (BinOp, Add, Call, Name, Load, GeneratorExp, Attribute, comprehension, Store)
 
 class Array(Base):
     def __init__(self, name, count_type, element_type):
@@ -7,26 +8,99 @@ class Array(Base):
         self.count_type = count_type
         self.element_type = element_type
     
-    def len_str(self):
+    def get_len_node(self, sizer_name, object_override=None, node_override=None):
+        if object_override == None:
+            obj = Name(
+                id='self',
+                ctx=Load()
+            )
+        else:
+            obj = value_override
+        if node_override == None:
+            node = Attribute(
+                value=obj,
+                attr=self.field_name,
+                ctx=Load()
+            )
+        else:
+            node = node_override
+        len_obj = Call(
+            func=Name(
+                id='len',
+                ctx=Load()
+            ),
+            args=[node],
+            keywords=[]
+        )
+        return BinOp(
+            left=self.count_type.get_len_node(sizer_name, node_override=len_obj),
+            op=Add(),
+            right=Call(
+                func=Name(
+                    id='sum',
+                    ctx=Load()
+                ),
+                args=[
+                    GeneratorExp(
+                        elt=self.element_type.get_len_node(
+                            sizer_name,
+                            node_override=Name(
+                                id='item',
+                                ctx=Load()
+                            )
+                        ),
+                        generators=[
+                            comprehension(
+                                target=Name(
+                                    id='item',
+                                    ctx=Store()
+                                ),
+                                iter=node,
+                                ifs=[],
+                                is_async=0
+                            )
+                        ]
+                    )
+                ],
+                keywords=[]
+            )
+        )
+
+        return Call(
+            func=Name(
+                id='sum',
+                ctx=Load()
+            ),
+            args=[
+                GeneratorExp(
+                    elt=self.element_type.get_len_node(sizer_name, Name(id='item', ctx=Load())),
+                    generators=[
+                        comprehension(
+                            target=Name(
+                                id='item',
+                                ctx=Store()
+                            ),
+                            iter=obj,
+                            ifs=[],
+                            is_async=0
+                        )
+                    ]
+                )
+            ],
+            keywords=[]
+        )
+
+    def get_repr_body_nodes(self, prefix):
         pass
 
-    def repr_str(self):
+    def get_write_node(self, writer_name):
         pass
 
-    def write_str(self):
+    def get_read_node(self, reader_name):
         pass
 
-    def read_str(self):
-        pass
-
-    def update_class_str(self, class_str, context):
-        field_name = format_field_name(self.name)
-        return replace_string(class_str,
-            {
-                '{{init_args}}': '%s{{init_args}}' % (field_name),
-                '{{init_body}}': '%s = %s; {{init_body}}' % (field_name, field_name),
-                '{{len_body}}': 'sum({' % (context.sizer_name),
-            })
+    def get_module_body_nodes(self):
+        return self.element_type.get_module_body_nodes()
 
     @staticmethod
     def from_protocol_data(data):
@@ -35,4 +109,5 @@ class Array(Base):
         name = data['name'] if 'name' in data else None
         count_type = parse_field(data['options']['count'])
         element_type = parse_field(data['options']['element'])
+        element_type.name = f'{name} Item'
         return Array(name, count_type, element_type)

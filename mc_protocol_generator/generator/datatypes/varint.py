@@ -1,34 +1,49 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from ast import Call, Attribute, Name, Load
 
 class VarInt(Base):
-    def len_str(self, sizer_name):
-        field_name = format_field_name(self.name)
-        return '%s.varint_size(self.%s){{len_body}}' % (sizer_name, field_name)
+    @property
+    def type(self):
+        return int
 
-    def repr_str(self):
-        field_name = format_field_name(self.name)
-        return '%s={self.%s}{{repr_body}}' % (field_name, field_name)
+    def get_len_node(self, sizer_name, object_override=None, node_override=None):
+        if object_override == None:
+            obj = Name(
+                id='self',
+                ctx=Load()
+            )
+        else:
+            obj = value_override
+        if node_override == None:
+            node = Attribute(
+                value=obj,
+                attr=self.field_name,
+                ctx=Load()
+            )
+        else:
+            node = node_override
+        return Call(
+            func=Attribute(
+                value=Name(
+                    id=sizer_name,
+                    ctx=Load()
+                ),
+                attr='varint_size',
+                ctx=Load()
+            ),
+            args=[node],
+            keywords=[]
+        )
 
-    def write_str(self, writer_name):
-        field_name = format_field_name(self.name)
-        return '%s.write_varint(self.%s); {{write_packet_body}}' % (writer_name, field_name)
+    def get_repr_body_nodes(self, prefix):
+        pass
 
-    def read_str(self, reader_name):
-        field_name = format_field_name(self.name)
-        return '%s = %s.read_varint(); {{read_packet_body}}' % (field_name, reader_name)
+    def get_write_node(self, writer_name):
+        pass
 
-    def update_class_str(self, class_str, context):
-        field_name = format_field_name(self.name)
-        return replace_string(class_str,
-            {
-                '{{init_args}}': '%s{{init_args}}' % (field_name),
-                '{{init_body}}': '%s = %s; {{init_body}}' % (field_name, field_name),
-                '{{len_body}}': self.len_str(context.sizer_name),
-                '{{repr_body}}': self.repr_str(),
-                '{{write_packet_body}}': self.write_str(context.writer_name),
-                '{{read_packet_body}}': self.read_str(context.reader_name)
-            })
+    def get_read_node(self, reader_name):
+        pass
 
     @staticmethod
     def from_protocol_data(data):

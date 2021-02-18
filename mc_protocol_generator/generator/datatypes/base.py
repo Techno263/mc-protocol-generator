@@ -1,26 +1,69 @@
 from abc import ABC, abstractmethod
+from mc_protocol_generator.generator.util import format_field_name
+from ast import arg, Assign, Attribute, Name, Load, Store
 
 class Base(ABC):
     def __init__(self, name):
         self.name = name
 
-    def imports(self):
-        return ''
+    @property
+    def field_name(self):
+        return format_field_name(self.name)
 
-    def len_str(self, sizer_name):
-        return ''
+    @property
+    def type(self):
+        return None
 
-    def repr_str(self):
-        return ''
+    def get_init_args(self):
+        return (
+            [
+                arg(
+                    arg=self.field_name,
+                    annotation=None,
+                    type_comment=None
+                )
+            ],
+            []
+        )
 
-    def write_str(self, writer_name):
-        return ''
-
-    def read_str(self, reader_name):
-        return ''
+    def get_init_body_nodes(self):
+        return [
+            Assign(
+                targets=[
+                    Attribute(
+                        value=Name(
+                            id='self',
+                            ctx=Load()
+                        ),
+                        attr=self.field_name,
+                        ctx=Store()
+                    )
+                ],
+                value=Name(
+                    id=self.field_name,
+                    ctx=Load()
+                ),
+                type_comment=None
+            )
+        ]
 
     @abstractmethod
-    def update_class_str(self, class_str, context):
+    def get_len_node(self, sizer_name, object_override=None, node_override=None):
+        pass
+
+    @abstractmethod
+    def get_repr_body_nodes(self, prefix):
+        pass
+
+    @abstractmethod
+    def get_write_node(self, writer_name):
+        pass
+
+    @abstractmethod
+    def get_read_node(self, reader_name):
+        pass
+
+    def get_module_body_nodes(self):
         pass
 
     @staticmethod

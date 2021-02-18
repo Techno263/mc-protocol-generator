@@ -98,7 +98,7 @@ def write_byte_array(writer, value):
 
 class DataWriter:
     def __new__(cls, writer):
-        writer.write_boolean = types.MethodType(write_boolean, writer)
+        writer.write_bool = types.MethodType(write_bool, writer)
         writer.write_byte = types.MethodType(write_byte, writer)
         writer.write_ubyte = types.MethodType(write_ubyte, writer)
         writer.write_short = types.MethodType(write_short, writer)
