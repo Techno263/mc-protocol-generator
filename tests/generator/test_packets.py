@@ -2,19 +2,6 @@ import unittest
 from mc_protocol_generator.generator.packet import Packet
 from black import format_str, Mode
 
-'''
-Test Cases:
-    Basic types (int, short, byte)
-    Dynamic types (string, chat, varint)
-    Array of basic types
-    Array of dynamic types
-    Compound (with basic and dynamic types)
-    Array of Compounds (Compound has option type)
-    Optional basic type
-    Optional dynamic type
-    Switch with dynamic and basic types
-'''
-
 black_mode = Mode(
     target_versions=set(),
     line_length=79,
@@ -186,6 +173,7 @@ class TestPackets(unittest.TestCase):
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -245,6 +233,7 @@ class TestPackets(unittest.TestCase):
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -304,6 +293,7 @@ class TestPackets(unittest.TestCase):
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -496,6 +486,7 @@ class BasicCompoundPacket:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -615,6 +606,7 @@ class TabCompleteClientbound:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -668,6 +660,7 @@ class TabCompleteClientbound:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -721,6 +714,7 @@ class TabCompleteClientbound:
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -815,6 +809,7 @@ class SwitchPacket:
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -969,6 +964,7 @@ class SwitchPacket:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -1040,6 +1036,7 @@ class SwitchPacket:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code
@@ -1060,14 +1057,45 @@ class SwitchPacket:
                             'type': 'VarInt'
                         },
                         'element': {
-                            'type': 'VarInt'
+                            'type': 'Option',
+                            'options': {
+                                'optional': {
+                                    'type': 'VarInt'
+                                }
+                            }
                         }
                     }
                 }
             ]
         }
         packet_src_code = '''
+            class ArrayOptionPacket:
+                name = 'Array Option Packet'
+                id = 0
+                state = 'play'
+                bound_to = 'client'
 
+                def __init__(self, outer_array):
+                    self.outer_array = outer_array
+
+                def __len__(self):
+                    return (
+                        dl.varint_size(len(self.outer_array))
+                        + sum ((
+                            0 if item == None else dl.varint_size(item)
+                            for item in self.outer_array
+                        ))
+                    )
+                
+                def __repr__(self):
+                    pass
+
+                def write_packet(self, writer):
+                    pass
+
+                @staticmethod
+                def read_packet(reader):
+                    pass
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Array Option Packet', packet.name)
@@ -1076,6 +1104,269 @@ class SwitchPacket:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
+        self.assertEqual(
+            format_str(packet_src_code, mode=black_mode),
+            generated_src_code
+        )
+
+    def test_compound_with_array(self):
+        packet_data = {
+            'name': 'Compound with Array Packet',
+            'id': 0x00,
+            'state': 'play',
+            'bound_to': 'client',
+            'fields': [
+                {
+                    'name': 'Compound',
+                    'type': 'Compound',
+                    'options': {
+                        'fields': [
+                            {
+                                'name': 'Array',
+                                'type': 'Array',
+                                'options': {
+                                    'count': {
+                                        'type': 'VarInt'
+                                    },
+                                    'element': {
+                                        'type': 'String'
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        packet_src_code = '''
+class Compound:
+    def __init__(self, array):
+        self.array = array
+
+    def __len__(self):
+        return dl.varint_size(len(self.array)) + sum(
+            (dl.string_size(item) for item in self.array)
+        )
+    
+    def __repr__(self):
+        pass
+
+    def write_data(self, writer):
+        pass
+
+    @staticmethod
+    def read_data(reader):
+        pass
+
+class CompoundWithArrayPacket:
+    name = 'Compound with Array Packet'
+    id = 0
+    state = 'play'
+    bound_to = 'client'
+
+    def __init__(self, compound):
+        self.compound = compound
+
+    def __len__(self):
+        return len(self.compound)
+
+    def __repr__(self):
+        pass
+
+    def write_packet(self, writer):
+        pass
+
+    @staticmethod
+    def read_packet(reader):
+        pass
+        '''
+        packet = Packet.parse_packet_data(packet_data)
+        self.assertEqual('Compound with Array Packet', packet.name)
+        self.assertEqual(0, packet.id)
+        self.assertEqual('play', packet.state)
+        self.assertEqual('client', packet.bound_to)
+        generated_src_code = packet.get_packet_code()
+        generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
+        self.assertEqual(
+            format_str(packet_src_code, mode=black_mode),
+            generated_src_code
+        )
+
+    def test_compound_with_compound(self):
+        packet_data = {
+            'name': 'Compound with Array Packet',
+            'id': 0x00,
+            'state': 'play',
+            'bound_to': 'client',
+            'fields': [
+                {
+                    'name': 'Compound',
+                    'type': 'Compound',
+                    'options': {
+                        'fields': [
+                            {
+                                'name': 'Nested Compound',
+                                'type': 'Compound',
+                                'options': {
+                                    'fields': [
+                                        {
+                                            'name': 'Num',
+                                            'type': 'Int'
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        packet_src_code = '''
+class NestedCompound:
+    def __init__(self, num):
+        self.num = num
+
+    def __len__(self):
+        return dl.int_size
+
+    def __repr__(self):
+        pass
+
+    def write_data(self, writer):
+        pass
+
+    @staticmethod
+    def read_data(reader):
+        pass
+
+class Compound:
+    def __init__(self, nested_compound):
+        self.nested_compound = nested_compound
+
+    def __len__(self):
+        return len(self.nested_compound)
+    
+    def __repr__(self):
+        pass
+
+    def write_data(self, writer):
+        pass
+
+    @staticmethod
+    def read_data(reader):
+        pass
+
+class CompoundWithArrayPacket:
+    name = 'Compound with Array Packet'
+    id = 0
+    state = 'play'
+    bound_to = 'client'
+
+    def __init__(self, compound):
+        self.compound = compound
+
+    def __len__(self):
+        return len(self.compound)
+
+    def __repr__(self):
+        pass
+
+    def write_packet(self, writer):
+        pass
+
+    @staticmethod
+    def read_packet(reader):
+        pass
+        '''
+        packet = Packet.parse_packet_data(packet_data)
+        self.assertEqual('Compound with Array Packet', packet.name)
+        self.assertEqual(0, packet.id)
+        self.assertEqual('play', packet.state)
+        self.assertEqual('client', packet.bound_to)
+        generated_src_code = packet.get_packet_code()
+        generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
+        self.assertEqual(
+            format_str(packet_src_code, mode=black_mode),
+            generated_src_code
+        )
+
+    def test_compound_with_option(self):
+        packet_data = {
+            'name': 'Compound with Option Packet',
+            'id': 0x00,
+            'state': 'play',
+            'bound_to': 'client',
+            'fields': [
+                {
+                    'name': 'Compound',
+                    'type': 'Compound',
+                    'options': {
+                        'fields': [
+                            {
+                                'name': 'Int Option',
+                                'type': 'Option',
+                                'options': {
+                                    'optional': {
+                                        'type': 'Int'
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        packet_src_code = '''
+class Compound:
+    def __init__(self, int_option):
+        self.int_option = int_option
+
+    def __len__(self):
+        return 0 if self.int_option == None else dl.int_size
+    
+    def __repr__(self):
+        pass
+
+    def write_data(self, writer):
+        pass
+
+    @staticmethod
+    def read_data(reader):
+        pass
+
+class CompoundWithOptionPacket:
+    name = 'Compound with Option Packet'
+    id = 0
+    state = 'play'
+    bound_to = 'client'
+
+    def __init__(self, compound):
+        self.compound = compound
+
+    def __len__(self):
+        return len(self.compound)
+
+    def __repr__(self):
+        pass
+
+    def write_packet(self, writer):
+        pass
+
+    @staticmethod
+    def read_packet(reader):
+        pass
+        '''
+        packet = Packet.parse_packet_data(packet_data)
+        self.assertEqual('Compound with Option Packet', packet.name)
+        self.assertEqual(0, packet.id)
+        self.assertEqual('play', packet.state)
+        self.assertEqual('client', packet.bound_to)
+        generated_src_code = packet.get_packet_code()
+        generated_src_code = format_str(generated_src_code, mode=black_mode)
+        exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
             generated_src_code

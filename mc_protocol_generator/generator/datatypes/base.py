@@ -10,6 +10,12 @@ class Base(ABC):
     def field_name(self):
         return format_field_name(self.name)
 
+    def get_field_name_set(self):
+        return {self.field_name}
+
+    def get_class_name_sets(self):
+        return [set()]
+
     @property
     def type(self):
         return None

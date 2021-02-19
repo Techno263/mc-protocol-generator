@@ -4,32 +4,36 @@ from ..code_generator_context import CodeGeneratorContext
 from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef,
                  Assign, Store, arguments, arg, BinOp, Add, Return)
 
-compound_class_template = '''class {{class_name}}
-    def __init__(self{{init_args}}):
-        {{init_body}}
-
-    def __len__(self):
-        return {{len_body}}
-
-    def __repr__(self):
-        return {{repr_body}}
-
-    def write_data(self, {{writer_name}}):
-        {{write_data_body}}
-
-    @staticmethod
-    def read_data({{reader_name}}):
-        {{reader_body}}
-'''
-
 class_sizer_name = 'dl'
 class_writer_name = 'writer'
 class_reader_name = 'reader'
+
+def validate(compound):
+    field_sets = [field.get_field_name_set() for field in compound.fields]
+    has_field_intersection = any(
+        field_set & other_set
+        for index, field_set in enumerate(field_sets, start=1)
+        for other_set in field_sets[index:]
+    )
+    if has_field_intersection:
+        raise Exception(f'Compound field names must be distinct')
 
 class Compound(Base):
     def __init__(self, name, fields):
         super().__init__(name)
         self.fields = fields
+        validate(self)
+
+    def get_class_name_sets(self):
+        return [
+            {format_class_name(self.name)}
+        ] + [
+            class_name_set
+            for field in self.fields
+            for class_name_set in field.get_class_name_sets()
+            if len(class_name_set) > 0
+        ]
+
 
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
         if object_override == None:

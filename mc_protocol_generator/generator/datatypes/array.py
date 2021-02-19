@@ -2,11 +2,19 @@ from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
 from ast import (BinOp, Add, Call, Name, Load, GeneratorExp, Attribute, comprehension, Store)
 
+def validate(array):
+    from .datatype import integer_types, all_types, switch_types
+    if type(array.count_type) not in integer_types:
+        raise Exception('Count type must be an integral type')
+    if type(array.element_type) not in (all_types - switch_types):
+        raise Exception(f'Invalid element type, {array.element_type}')
+
 class Array(Base):
     def __init__(self, name, count_type, element_type):
         super().__init__(name)
         self.count_type = count_type
         self.element_type = element_type
+        validate(self)
     
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
         if object_override == None:

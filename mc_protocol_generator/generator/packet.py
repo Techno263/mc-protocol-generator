@@ -63,6 +63,45 @@ def parse_field(field_data):
     else:
         raise Exception("Unable to parse type:", data_type)
 
+def validate(packet):
+    field_sets = [field.get_field_name_set() for field in packet.fields]
+    has_field_intersection = any(
+        field_set & other_set
+        for index, field_set in enumerate(field_sets, start=1)
+        for other_set in field_sets[index:]
+    )
+    if has_field_intersection:
+        field_intersections = [
+            field
+            for index, field_set in enumerate(field_sets, start=1)
+            for other_set in field_sets[index:]
+            if field_set & other_set
+            for field in field_set
+        ]
+        raise Exception(f'Packet field names must be distinct. Field intersection(s): {", ".join(field_intersections)}')
+    class_name_sets = [
+        class_name_set
+        for field in packet.fields 
+        for class_name_set in field.get_class_name_sets()
+        if len(class_name_set) > 0
+    ] + [
+        {format_class_name(packet.name)}
+    ]
+    has_class_intersection = any(
+        class_name_set & other_set
+        for index, class_name_set in enumerate(class_name_sets, start=1)
+        for other_set in class_name_sets[index:]
+    )
+    if has_class_intersection:
+        class_intersections = [
+            class_name
+            for index, class_name_set in enumerate(class_name_sets, start=1)
+            for other_set in class_name_sets[index:]
+            if class_name_set & other_set
+            for class_name in class_name_set
+        ]
+        raise Exception(f'Class names must be distinct. Class intersection(s): {", ".join(class_intersections)}')
+
 class Packet:
     def __init__(self, name, id, state, bound_to, fields):
         self.name = name
@@ -70,6 +109,7 @@ class Packet:
         self.state = state
         self.bound_to = bound_to
         self.fields = fields
+        validate(self)
 
     @property
     def class_name(self):

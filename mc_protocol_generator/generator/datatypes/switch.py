@@ -1,7 +1,10 @@
-from .base import Base
 from ast import (BinOp, Call, Add, IfExp, Compare, Attribute,
                  Name, Load, Eq, Constant, arg, Assign, Store)
 from collections.abc import Iterator
+from collections import namedtuple
+from .base import Base
+
+Case = namedtuple('Case', ['value', 'fields'])
 
 class StatefulIterator(Iterator):
     def __init__(self, iterable, stateful_enumerator):
@@ -67,11 +70,33 @@ def get_fields_len_node(sizer_name, fields, obj):
         )
     return bin_op
 
+def validate(switch):
+    switch_fields = {
+        field_name
+        for case in switch.cases
+        for field in case.fields
+        for field_name in field.get_field_name_set()
+    }
+    if switch.field_name in switch_fields:
+        raise Exception(f'Case field names cannot intersect with switch name')
+
 class Switch(Base):
     def __init__(self, name, switch_type, cases):
         super().__init__(name)
         self.switch_type = switch_type
         self.cases = cases
+        validate(self)
+
+    def get_field_name_set(self):
+        return (
+            {self.field_name}
+            | {
+                field_name
+                for case in self.cases
+                for field in case.fields
+                for field_name in field.get_field_name_set()
+            }
+        )
 
     def get_init_args(self):
         stateful_enumerate = StatefulEnumerator()
@@ -84,7 +109,7 @@ class Switch(Base):
                     index
                 )
                 for case in self.cases
-                for index, field in stateful_enumerate(case['fields'])
+                for index, field in stateful_enumerate(case.fields)
             },
             key=lambda x: x.index)
         ]
@@ -136,7 +161,7 @@ class Switch(Base):
                     index
                 )
                 for case in self.cases
-                for index, field in stateful_enumerate(case['fields'])
+                for index, field in stateful_enumerate(case.fields)
             },
             key=lambda x: x.index)
         ]
@@ -170,13 +195,13 @@ class Switch(Base):
                     ops=[Eq()],
                     comparators=[
                         Constant(
-                            value=self.switch_type.type(self.cases[-1]['value'])
+                            value=self.switch_type.type(self.cases[-1].value)
                         )
                     ]
                 ),
                 body=get_fields_len_node(
                     sizer_name,
-                    self.cases[-1]['fields'],
+                    self.cases[-1].fields,
                     object_override
                 ),
                 orelse=Constant(value=0)
@@ -192,13 +217,13 @@ class Switch(Base):
                         ops=[Eq()],
                         comparators=[
                             Constant(
-                                value=self.switch_type.type(case['value'])
+                                value=self.switch_type.type(case.value)
                             )
                         ]
                     ),
                     body=get_fields_len_node(
                         sizer_name,
-                        case['fields'],
+                        case.fields,
                         object_override
                     ),
                     orelse=case_node
@@ -229,10 +254,10 @@ class Switch(Base):
         switch_type = parse_field(data['options']['switch'])
         switch_type.name = name
         cases = [
-            {
-                "value": case['value'],
-                "fields": [parse_field(field) for field in case['fields']]
-            }
+            Case(
+                case['value'],
+                [parse_field(field) for field in case['fields']]
+            )
             for case in data['options']['cases']
         ]
         return Switch(name, switch_type, cases)
