@@ -18,7 +18,7 @@ class Base(ABC):
 
     @property
     def type(self):
-        return None
+        pass
 
     def get_init_args(self):
         return (

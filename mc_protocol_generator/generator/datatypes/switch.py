@@ -71,6 +71,7 @@ def get_fields_len_node(sizer_name, fields, obj):
     return bin_op
 
 def validate(switch):
+    from .datatype import all_types, switch_types
     switch_fields = {
         field_name
         for case in switch.cases
@@ -79,6 +80,13 @@ def validate(switch):
     }
     if switch.field_name in switch_fields:
         raise Exception(f'Case field names cannot intersect with switch name')
+    valid_types = all_types - switch_types
+    if any(
+        (field_type := type(field)) not in valid_types 
+        for case in switch.cases
+        for field in case.fields
+    ):
+        raise Exception(f'Invalid field type, {field_type}')
 
 class Switch(Base):
     def __init__(self, name, switch_type, cases):
@@ -245,6 +253,15 @@ class Switch(Base):
 
     def get_read_node(self, reader_name):
         pass
+
+    def get_module_body_nodes(self):
+        return [
+            node
+            for case in self.cases
+            for field in case.fields
+            if (module_body_nodes := field.get_module_body_nodes()) != None
+            for node in module_body_nodes
+        ]
 
     @staticmethod
     def from_protocol_data(data):

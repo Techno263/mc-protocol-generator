@@ -579,7 +579,6 @@ class CompoundWithSwitchPacket:
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
         generated_src_code = format_str(generated_src_code, mode=black_mode)
-        print(generated_src_code)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
