@@ -126,7 +126,7 @@ class Packet:
         )
         opt_args, defaults = opt_args if len(opt_args) == 2 else ([], [])
         args = [arg(arg='self', annotation=None, type_comment=None)] + args + opt_args
-        temp = arguments(
+        return arguments(
             posonlyargs=[],
             args=args,
             vararg=None,
@@ -135,7 +135,6 @@ class Packet:
             kwarg=None,
             defaults=defaults
         )
-        return temp
 
     def get_init_body_nodes(self):
         return [

@@ -70,12 +70,33 @@ class Compound(Base):
         pass
 
     def _get_class_init_arg_nodes(self):
-        return [
-            arg(arg=field.field_name)
-            for field in self.fields
-        ]
+        args, opt_args = zip(*[field.get_init_args() for field in self.fields])
+        args = [arg for arg_list in args for arg in arg_list]
+        opt_args = tuple(
+            map(
+                list,
+                zip(*[opt_arg for opt_arg_list in opt_args for opt_arg in opt_arg_list])
+            )
+        )
+        opt_args, defaults = opt_args if len(opt_args) == 2 else ([], [])
+        args = [arg(arg='self', annotation=None, type_comment=None)] + args + opt_args
+        return arguments(
+            posonlyargs=[],
+            args=args,
+            vararg=None,
+            kwonlyargs=[],
+            kw_defaults=[],
+            kwarg=None,
+            defaults=defaults
+        )
 
     def _get_class_init_body_nodes(self):
+        return [
+            node
+            for field in self.fields
+            for node in field.get_init_body_nodes()
+        ]
+        '''
         return [
             Assign(
                 targets=[
@@ -95,6 +116,7 @@ class Compound(Base):
             )
             for field in self.fields
         ]
+        '''
 
     def _get_class_len_body_nodes(self):
         if len(self.fields) == 0:
@@ -140,18 +162,7 @@ class Compound(Base):
                 body=[
                     FunctionDef(
                         name='__init__',
-                        args=arguments(
-                            posonlyargs=[],
-                            args=[
-                                arg(arg='self'),
-                                *self._get_class_init_arg_nodes()
-                            ],
-                            vararg=None,
-                            kwonlyargs=[],
-                            kw_defaults=[],
-                            kwarg=None,
-                            defaults=[]
-                        ),
+                        args=self._get_class_init_arg_nodes(),
                         body=self._get_class_init_body_nodes(),
                         decorator_list=[],
                         returns=None,
