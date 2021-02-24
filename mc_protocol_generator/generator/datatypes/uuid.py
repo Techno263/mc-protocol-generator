@@ -12,9 +12,6 @@ class UUID(Base):
             ctx=Load()
         )
 
-    def get_repr_body_nodes(self, prefix):
-        pass
-
     def get_write_node(self, writer_name):
         pass
 

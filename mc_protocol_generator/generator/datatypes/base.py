@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from mc_protocol_generator.generator.util import format_field_name
-from ast import arg, Assign, Attribute, Name, Load, Store
+from ast import arg, Assign, Attribute, Name, Load, Store, Constant, FormattedValue, Call
 
 class Base(ABC):
     def __init__(self, name):
@@ -57,9 +57,24 @@ class Base(ABC):
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
         pass
 
-    @abstractmethod
-    def get_repr_body_nodes(self, prefix):
-        pass
+    def get_repr_body_nodes(self):
+        return [
+            Constant(value=f'{self.field_name}='),
+            FormattedValue(
+                value=Call(
+                    func=Name(id='repr', ctx=Load()),
+                    args=[
+                        Attribute(
+                            value=Name(id='self', ctx=Load()),
+                            attr=self.field_name,
+                            ctx=Load()
+                        )
+                    ],
+                    keywords=[]
+                ),
+                conversion=-1
+            )
+        ]
 
     @abstractmethod
     def get_write_node(self, writer_name):

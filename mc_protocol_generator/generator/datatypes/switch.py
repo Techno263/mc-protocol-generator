@@ -1,5 +1,5 @@
-from ast import (BinOp, Call, Add, IfExp, Compare, Attribute,
-                 Name, Load, Eq, Constant, arg, Assign, Store)
+from ast import (BinOp, Call, Add, IfExp, Compare, Attribute, Name, Load, Eq,
+                 Constant, arg, Assign, Store, FormattedValue)
 from collections.abc import Iterator
 from collections import namedtuple
 from .base import Base
@@ -36,9 +36,9 @@ class StatefulEnumerator:
 
 
 class SetFilter:
-    def __init__(self, key, arg, index=0):
+    def __init__(self, key, value, index=0):
         self.key = key
-        self.arg = arg
+        self.value = value
         self.index = index
 
     def __repr__(self):
@@ -109,7 +109,7 @@ class Switch(Base):
     def get_init_args(self):
         stateful_enumerate = StatefulEnumerator()
         opt_args = [
-            set_filter.arg
+            set_filter.value
             for set_filter in sorted({
                 SetFilter(
                     field.field_name,
@@ -153,12 +153,12 @@ class Switch(Base):
                             id='self',
                             ctx=Load()
                         ),
-                        attr=set_filter.arg.field_name,
+                        attr=set_filter.value.field_name,
                         ctx=Store()
                     )
                 ],
                 value=Name(
-                    id=set_filter.arg.field_name,
+                    id=set_filter.value.field_name,
                     ctx=Load()
                 )
             )
@@ -245,8 +245,63 @@ class Switch(Base):
             right=case_node
         )
 
-    def get_repr_body_nodes(self, prefix):
-        pass
+    def get_repr_body_nodes(self):
+        stateful_enumerate = StatefulEnumerator()
+        opt_args = [
+            set_filter.value
+            for set_filter in sorted({
+                SetFilter(
+                    field.field_name,
+                    [
+                        Constant(value=f'{field.field_name}='),
+                        FormattedValue(
+                            value=Call(
+                                func=Name(id='repr', ctx=Load()),
+                                args=[
+                                    Attribute(
+                                        value=Name(id='self', ctx=Load()),
+                                        attr=field.field_name,
+                                        ctx=Load()
+                                    )
+                                ],
+                                keywords=[]
+                            ),
+                            conversion=-1
+                        )
+                    ],
+                    index
+                )
+                for case in self.cases
+                for index, field in stateful_enumerate(case.fields)
+            },
+            key=lambda x: x.index)
+        ]
+        field_nodes = [
+            [
+                Constant(value=f'{self.switch_type.field_name}='),
+                FormattedValue(
+                    value=Call(
+                        func=Name(id='repr', ctx=Load()),
+                        args=[
+                            Attribute(
+                                value=Name(id='self', ctx=Load()),
+                                attr=self.switch_type.field_name,
+                                ctx=Load()
+                            )
+                        ],
+                        keywords=[]
+                    ),
+                    conversion=-1
+                )
+            ]
+        ] + opt_args
+        nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
+        nodes[0::2] = field_nodes
+        return [
+            node
+            for node_list in nodes
+            for node in node_list
+        ]
 
     def get_write_node(self, writer_name):
         pass

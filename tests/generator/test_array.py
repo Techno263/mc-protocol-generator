@@ -43,7 +43,7 @@ class TestArray(unittest.TestCase):
                     )
                 
                 def __repr__(self):
-                    pass
+                    return f'IntArrayPacket(int_array={repr(self.int_array)})'
 
                 def write_packet(self, writer):
                     pass
@@ -103,7 +103,7 @@ class TestArray(unittest.TestCase):
                     )
                 
                 def __repr__(self):
-                    pass
+                    return f'StringArrayPacket(string_array={repr(self.string_array)})'
 
                 def write_packet(self, writer):
                     pass
@@ -190,7 +190,7 @@ class MatchesItem:
         )
     
     def __repr__(self):
-        pass
+        return f'MatchesItem(match={repr(self.match)}, tooltip={repr(self.tooltip)})'
 
     def write_data(self, writer):
         pass
@@ -223,7 +223,7 @@ class TabCompleteClientbound:
         )
     
     def __repr__(self):
-        pass
+        return f'TabCompleteClientbound(id={repr(self.id)}, start={repr(self.start)}, length={repr(self.length)}, matches={repr(self.matches)})'
 
     def write_packet(self, writer):
         pass
@@ -295,7 +295,7 @@ class TabCompleteClientbound:
                     )
 
                 def __repr__(self):
-                    pass
+                    return f'ArrayArrayPacket(outer_array={repr(self.outer_array)})'
 
                 def write_packet(self, writer):
                     pass
@@ -363,7 +363,7 @@ class TabCompleteClientbound:
                     )
                 
                 def __repr__(self):
-                    pass
+                    return f'ArrayOptionPacket(outer_array={repr(self.outer_array)})'
 
                 def write_packet(self, writer):
                     pass

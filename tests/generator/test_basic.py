@@ -33,6 +33,10 @@ class TestBasic(unittest.TestCase):
                     'type': 'Double'
                 },
                 {
+                    'name': 'Entity Metadata Value',
+                    'type': 'EntityMetadata'
+                },
+                {
                     'name': 'Float Value',
                     'type': 'Float'
                 },
@@ -101,17 +105,18 @@ class TestBasic(unittest.TestCase):
                 bound_to = 'server'
 
                 def __init__(self, angle_value, bool_value, byte_value,
-                             chat_value, double_value, float_value,
-                             identifier_value, int_value, long_value,
-                             nbt_value, position_value, short_value,
-                             slot_value, string_value, ubyte_value,
-                             ushort_value, uuid_value, varint_value,
-                             varlong_value):
+                             chat_value, double_value, entity_metadata_value,
+                             float_value, identifier_value, int_value,
+                             long_value, nbt_value, position_value,
+                             short_value, slot_value, string_value,
+                             ubyte_value, ushort_value, uuid_value,
+                             varint_value, varlong_value):
                     self.angle_value = angle_value
                     self.bool_value = bool_value
                     self.byte_value = byte_value
                     self.chat_value = chat_value
                     self.double_value = double_value
+                    self.entity_metadata_value = entity_metadata_value
                     self.float_value = float_value
                     self.identifier_value = identifier_value
                     self.int_value = int_value
@@ -134,6 +139,7 @@ class TestBasic(unittest.TestCase):
                         dl.byte_size +
                         dl.chat_size(self.chat_value) +
                         dl.double_size +
+                        dl.entity_metadata_size(self.entity_metadata_value) +
                         dl.float_size +
                         dl.identifier_size(self.identifier_value) +
                         dl.int_size +
@@ -151,7 +157,7 @@ class TestBasic(unittest.TestCase):
                     )
 
                 def __repr__(self):
-                    pass
+                    return f'BasicPacket(angle_value={repr(self.angle_value)}, bool_value={repr(self.bool_value)}, byte_value={repr(self.byte_value)}, chat_value={repr(self.chat_value)}, double_value={repr(self.double_value)}, entity_metadata_value={repr(self.entity_metadata_value)}, float_value={repr(self.float_value)}, identifier_value={repr(self.identifier_value)}, int_value={repr(self.int_value)}, long_value={repr(self.long_value)}, nbt_value={repr(self.nbt_value)}, position_value={repr(self.position_value)}, short_value={repr(self.short_value)}, slot_value={repr(self.slot_value)}, string_value={repr(self.string_value)}, ubyte_value={repr(self.ubyte_value)}, ushort_value={repr(self.ushort_value)}, uuid_value={repr(self.uuid_value)}, varint_value={repr(self.varint_value)}, varlong_value={repr(self.varlong_value)})'
 
                 def write_packet(self, writer):
                     pass

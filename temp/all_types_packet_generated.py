@@ -10,7 +10,7 @@ class Compound:
         return dl.string_size(self.string) + dl.int_size
 
     def __repr__(self):
-        return f'Compound(...)'
+        return f'Compound(string={repr(self.string)}, int={repr(self.string)})'
 
     def write_data(self, writer):
         writer.write_string(self.string)
@@ -90,7 +90,7 @@ class AllTypesPacket:
     def __len__(self):
         return (
             dl.angle_size
-            + (dl.varint_size + sum((dl.string_size(item) for item in self.array)))
+            + (dl.varint_size(len(self.array)) + sum((dl.string_size(item) for item in self.array)))
             + dl.bool_size
             + dl.byte_size
             + dl.chat_size(self.chat)
@@ -123,7 +123,7 @@ class AllTypesPacket:
         )
 
     def __repr__(self):
-        return f'ComplexPacket(...)'
+        return f'ComplexPacket(angle={repr(self.angle)}, array={repr(self.array)}, bool={repr(self.bool)}, byte={repr(self.byte)}, chat={repr(self.chat)}, compound={repr(self.compound)}, double={repr(self.double)}, entity_metadata={repr(self.entity_metadata)}, float={repr(self.float)}, identifier={repr(self.identifier)}, int={repr(self.int)}, long={repr(self.long)}, nbt={repr(self.nbt)}, option={repr(self.option)}, position={repr(self.position)}, short={repr(self.short)}, slot={repr(self.slot)}, string={repr(self.string)}, switch_value={repr(self.switch_value)}, switch_short={repr(self.switch_short)}, switch_long={repr(self.switch_long)}, switch_int={repr(self.switch_int)}, ubyte={repr(self.ubyte)}, ushort={repr(self.ushort)}, uuid={repr(self.uuid)}, varint={repr(self.varint)}, varlong={repr(self.varlong)})'
 
     def write_packet(self, writer):
         writer.write_angle(self.angle)

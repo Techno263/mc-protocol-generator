@@ -1,8 +1,9 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_class_name
 from ..code_generator_context import CodeGeneratorContext
-from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef,
-                 Assign, Store, arguments, arg, BinOp, Add, Return)
+from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef, Assign,
+                 Store, arguments, arg, BinOp, Add, Return, JoinedStr,
+                 Constant)
 
 class_sizer_name = 'dl'
 class_writer_name = 'writer'
@@ -59,9 +60,6 @@ class Compound(Base):
             args=[node],
             keywords=[]
         )
-
-    def get_repr_body_nodes(self, prefix):
-        pass
 
     def get_write_node(self, writer_name):
         pass
@@ -137,8 +135,27 @@ class Compound(Base):
         return [Return(value=bin_op)]
 
     def _get_class_repr_body_nodes(self):
-        from ast import Pass
-        return [Pass()]
+        field_nodes = [
+            field.get_repr_body_nodes()
+            for field in self.fields
+        ]
+        nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
+        nodes[0::2] = field_nodes
+        return [
+            Return(
+                value=JoinedStr(
+                    values=[
+                        Constant(value=format_class_name(self.name) + '(')
+                    ] + [
+                        node
+                        for node_list in nodes
+                        for node in node_list
+                    ] + [
+                        Constant(value=')')
+                    ]
+                )
+            )
+        ]
 
     def _get_class_write_data_body_nodes(self):
         from ast import Pass

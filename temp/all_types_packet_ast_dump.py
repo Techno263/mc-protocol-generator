@@ -80,7 +80,45 @@ Module(
                         kw_defaults=[],
                         defaults=[],
                     ),
-                    body=[Return(value=JoinedStr(values=[Constant(value='Compound(...)')]))],
+                    body=[
+                        Return(
+                            value=JoinedStr(
+                                values=[
+                                    Constant(value='Compound(string='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='string',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', int='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='string',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=')'),
+                                ]
+                            )
+                        )
+                    ],
                     decorator_list=[],
                 ),
                 FunctionDef(
@@ -497,13 +535,35 @@ Module(
                                                                                                                             ),
                                                                                                                             op=Add(),
                                                                                                                             right=BinOp(
-                                                                                                                                left=Attribute(
-                                                                                                                                    value=Name(
-                                                                                                                                        id='dl',
+                                                                                                                                left=Call(
+                                                                                                                                    func=Attribute(
+                                                                                                                                        value=Name(
+                                                                                                                                            id='dl',
+                                                                                                                                            ctx=Load(),
+                                                                                                                                        ),
+                                                                                                                                        attr='varint_size',
                                                                                                                                         ctx=Load(),
                                                                                                                                     ),
-                                                                                                                                    attr='varint_size',
-                                                                                                                                    ctx=Load(),
+                                                                                                                                    args=[
+                                                                                                                                        Call(
+                                                                                                                                            func=Name(
+                                                                                                                                                id='len',
+                                                                                                                                                ctx=Load(),
+                                                                                                                                            ),
+                                                                                                                                            args=[
+                                                                                                                                                Attribute(
+                                                                                                                                                    value=Name(
+                                                                                                                                                        id='self',
+                                                                                                                                                        ctx=Load(),
+                                                                                                                                                    ),
+                                                                                                                                                    attr='array',
+                                                                                                                                                    ctx=Load(),
+                                                                                                                                                )
+                                                                                                                                            ],
+                                                                                                                                            keywords=[],
+                                                                                                                                        )
+                                                                                                                                    ],
+                                                                                                                                    keywords=[],
                                                                                                                                 ),
                                                                                                                                 op=Add(),
                                                                                                                                 right=Call(
@@ -947,7 +1007,420 @@ Module(
                         kw_defaults=[],
                         defaults=[],
                     ),
-                    body=[Return(value=JoinedStr(values=[Constant(value='ComplexPacket(...)')]))],
+                    body=[
+                        Return(
+                            value=JoinedStr(
+                                values=[
+                                    Constant(value='ComplexPacket(angle='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='angle',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', array='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='array',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', bool='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='bool',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', byte='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='byte',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', chat='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='chat',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', compound='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='compound',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', double='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='double',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', entity_metadata='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='entity_metadata',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', float='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='float',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', identifier='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='identifier',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', int='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='int',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', long='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='long',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', nbt='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='nbt',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', option='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='option',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', position='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='position',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', short='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='short',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', slot='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='slot',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', string='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='string',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', switch_value='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='switch_value',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', switch_short='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='switch_short',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', switch_long='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='switch_long',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', switch_int='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='switch_int',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', ubyte='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='ubyte',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', ushort='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='ushort',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', uuid='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='uuid',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', varint='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='varint',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=', varlong='),
+                                    FormattedValue(
+                                        value=Call(
+                                            func=Name(id='repr', ctx=Load()),
+                                            args=[
+                                                Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='varlong',
+                                                    ctx=Load(),
+                                                )
+                                            ],
+                                            keywords=[],
+                                        ),
+                                        conversion=-1,
+                                    ),
+                                    Constant(value=')'),
+                                ]
+                            )
+                        )
+                    ],
                     decorator_list=[],
                 ),
                 FunctionDef(

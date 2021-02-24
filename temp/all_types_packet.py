@@ -12,7 +12,7 @@ class Compound:
         )
 
     def __repr__(self):
-        return f'Compound(...)'
+        return f'Compound(string={repr(self.string)}, int={repr(self.string)})'
 
     def write_data(self, writer):
         writer.write_string(self.string)
@@ -99,7 +99,20 @@ class AllTypesPacket:
         )
 
     def __repr__(self):
-        return f'ComplexPacket(...)'
+        return (
+            f'ComplexPacket(angle={repr(self.angle)}, array={repr(self.array)}, '
+            f'bool={repr(self.bool)}, byte={repr(self.byte)}, chat={repr(self.chat)}, '
+            f'compound={repr(self.compound)}, double={repr(self.double)}, '
+            f'entity_metadata={repr(self.entity_metadata)}, float={repr(self.float)}, '
+            f'identifier={repr(self.identifier)}, int={repr(self.int)}, '
+            f'long={repr(self.long)}, nbt={repr(self.nbt)}, option={repr(self.option)}, '
+            f'position={repr(self.position)}, short={repr(self.short)}, '
+            f'slot={repr(self.slot)}, string={repr(self.string)}, '
+            f'switch_value={repr(self.switch_value)}, switch_short={repr(self.switch_short)}, '
+            f'switch_long={repr(self.switch_long)}, switch_int={repr(self.switch_int)}, '
+            f'ubyte={repr(self.ubyte)}, ushort={repr(self.ushort)}, uuid={repr(self.uuid)}, '
+            f'varint={repr(self.varint)}, varlong={repr(self.varlong)})'
+        )
 
     def write_packet(self, writer):
         writer.write_angle(self.angle)

@@ -1,6 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
-from ast import (Attribute, Name, Load)
+from ast import Attribute, Name, Load
 
 class Angle(Base):
 
@@ -16,9 +16,6 @@ class Angle(Base):
             attr='angle_size',
             ctx=Load()
         )
-
-    def get_repr_body_nodes(self, prefix):
-        pass
 
     def get_write_node(self, writer_name):
         pass

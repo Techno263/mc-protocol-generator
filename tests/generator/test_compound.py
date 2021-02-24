@@ -38,6 +38,10 @@ class TestCompound(unittest.TestCase):
                                 'type': 'Double'
                             },
                             {
+                                'name': 'Entity Metadata Value',
+                                'type': 'EntityMetadata'
+                            },
+                            {
                                 'name': 'Float Value',
                                 'type': 'Float'
                             },
@@ -104,17 +108,18 @@ class TestCompound(unittest.TestCase):
         packet_src_code = '''
 class BasicCompound:
     def __init__(self, angle_value, bool_value, byte_value,
-                    chat_value, double_value, float_value,
-                    identifier_value, int_value, long_value,
-                    nbt_value, position_value, short_value,
-                    slot_value, string_value, ubyte_value,
-                    ushort_value, uuid_value, varint_value,
-                    varlong_value):
+                 chat_value, double_value, entity_metadata_value,
+                 float_value, identifier_value, int_value,
+                 long_value, nbt_value, position_value,
+                 short_value, slot_value, string_value,
+                 ubyte_value, ushort_value, uuid_value,
+                 varint_value, varlong_value):
         self.angle_value = angle_value
         self.bool_value = bool_value
         self.byte_value = byte_value
         self.chat_value = chat_value
         self.double_value = double_value
+        self.entity_metadata_value = entity_metadata_value
         self.float_value = float_value
         self.identifier_value = identifier_value
         self.int_value = int_value
@@ -137,6 +142,7 @@ class BasicCompound:
             dl.byte_size +
             dl.chat_size(self.chat_value) +
             dl.double_size +
+            dl.entity_metadata_size(self.entity_metadata_value) +
             dl.float_size +
             dl.identifier_size(self.identifier_value) +
             dl.int_size +
@@ -154,7 +160,7 @@ class BasicCompound:
         )
 
     def __repr__(self):
-        pass
+        return f'BasicCompound(angle_value={repr(self.angle_value)}, bool_value={repr(self.bool_value)}, byte_value={repr(self.byte_value)}, chat_value={repr(self.chat_value)}, double_value={repr(self.double_value)}, entity_metadata_value={repr(self.entity_metadata_value)}, float_value={repr(self.float_value)}, identifier_value={repr(self.identifier_value)}, int_value={repr(self.int_value)}, long_value={repr(self.long_value)}, nbt_value={repr(self.nbt_value)}, position_value={repr(self.position_value)}, short_value={repr(self.short_value)}, slot_value={repr(self.slot_value)}, string_value={repr(self.string_value)}, ubyte_value={repr(self.ubyte_value)}, ushort_value={repr(self.ushort_value)}, uuid_value={repr(self.uuid_value)}, varint_value={repr(self.varint_value)}, varlong_value={repr(self.varlong_value)})'
 
     def write_data(self, writer):
         pass
@@ -176,7 +182,7 @@ class BasicCompoundPacket:
         return len(self.basic_compound)
     
     def __repr__(self):
-        pass
+        return f'BasicCompoundPacket(basic_compound={repr(self.basic_compound)})'
 
     def write_packet(self, writer):
         pass
@@ -238,7 +244,7 @@ class Compound:
         )
     
     def __repr__(self):
-        pass
+        return f'Compound(array={repr(self.array)})'
 
     def write_data(self, writer):
         pass
@@ -260,7 +266,7 @@ class CompoundWithArrayPacket:
         return len(self.compound)
 
     def __repr__(self):
-        pass
+        return f'CompoundWithArrayPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
         pass
@@ -284,7 +290,7 @@ class CompoundWithArrayPacket:
 
     def test_compound_with_compound(self):
         packet_data = {
-            'name': 'Compound with Array Packet',
+            'name': 'Compound with Compound Packet',
             'id': 0x00,
             'state': 'play',
             'bound_to': 'client',
@@ -320,7 +326,7 @@ class NestedCompound:
         return dl.int_size
 
     def __repr__(self):
-        pass
+        return f'NestedCompound(num={repr(self.num)})'
 
     def write_data(self, writer):
         pass
@@ -337,7 +343,7 @@ class Compound:
         return len(self.nested_compound)
     
     def __repr__(self):
-        pass
+        return f'Compound(nested_compound={repr(self.nested_compound)})'
 
     def write_data(self, writer):
         pass
@@ -346,8 +352,8 @@ class Compound:
     def read_data(reader):
         pass
 
-class CompoundWithArrayPacket:
-    name = 'Compound with Array Packet'
+class CompoundWithCompoundPacket:
+    name = 'Compound with Compound Packet'
     id = 0
     state = 'play'
     bound_to = 'client'
@@ -359,7 +365,7 @@ class CompoundWithArrayPacket:
         return len(self.compound)
 
     def __repr__(self):
-        pass
+        return f'CompoundWithCompoundPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
         pass
@@ -369,7 +375,7 @@ class CompoundWithArrayPacket:
         pass
         '''
         packet = Packet.parse_packet_data(packet_data)
-        self.assertEqual('Compound with Array Packet', packet.name)
+        self.assertEqual('Compound with Compound Packet', packet.name)
         self.assertEqual(0, packet.id)
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
@@ -416,7 +422,7 @@ class Compound:
         return 0 if self.int_option == None else dl.int_size
     
     def __repr__(self):
-        pass
+        return f'Compound(int_option={repr(self.int_option)})'
 
     def write_data(self, writer):
         pass
@@ -438,7 +444,7 @@ class CompoundWithOptionPacket:
         return len(self.compound)
 
     def __repr__(self):
-        pass
+        return f'CompoundWithOptionPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
         pass
@@ -541,7 +547,7 @@ class Compound:
         )
     
     def __repr__(self):
-        pass
+        return f'Compound(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
         pass
@@ -563,7 +569,7 @@ class CompoundWithSwitchPacket:
         return len(self.compound)
 
     def __repr__(self):
-        pass
+        return f'CompoundWithSwitchPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
         pass

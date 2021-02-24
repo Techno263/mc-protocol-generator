@@ -162,8 +162,29 @@ class Packet:
         return [Return(value=bin_op)]
 
     def get_repr_body_nodes(self):
-        from ast import Pass
-        return [Pass()]
+        field_nodes = [
+            field.get_repr_body_nodes()
+            for field in self.fields
+        ]
+        nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
+        nodes[0::2] = field_nodes
+        return [
+            Return(
+                value=JoinedStr(
+                    values=[
+                        Constant(value=self.class_name + '(')
+                    ] + [
+                        node
+                        for node_list in nodes
+                        for node in node_list
+                    ] + [
+                        Constant(value=')')
+                    ]
+                )
+            )
+        ]
+
+    def get_repr_body_nodes_old(self):
         def get_prefix(index):
             if index == 0:
                 return self.class_name + '('
@@ -174,7 +195,8 @@ class Packet:
                     values=[
                         node
                         for index, field in enumerate(self.fields)
-                        for node in field.get_repr_body_nodes(get_prefix(index))
+                        for nodes in field.get_repr_body_nodes(get_prefix(index))
+                        for node in nodes
                     ]
                 )
             )
