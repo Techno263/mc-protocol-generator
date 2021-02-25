@@ -52,6 +52,10 @@ class TestSwitch(unittest.TestCase):
                             }
                         ]
                     }
+                },
+                {
+                    'name': 'field5',
+                    'type': 'VarInt'
                 }
             ]
         }
@@ -62,23 +66,24 @@ class SwitchPacket:
     state = 'play'
     bound_to = 'server'
 
-    def __init__(self, switch_value, field1=None, field2=None, field3=None,
+    def __init__(self, switch_value, field5, field1=None, field2=None, field3=None,
                  field4=None):
         self.switch_value = switch_value
         self.field1 = field1
         self.field2 = field2
         self.field3 = field3
         self.field4 = field4
+        self.field5 = field5
 
     def __len__(self):
         return dl.varint_size(self.switch_value) + (
             dl.varint_size(self.field1) + dl.ubyte_size + dl.short_size if self.switch_value == 0 else 
                 dl.string_size(self.field4) if self.switch_value == 1 else
                     0 if self.switch_value == 2 else 0
-        )
+        ) + dl.varint_size(self.field5)
     
     def __repr__(self):
-        pass
+        return f'SwitchPacket(switch_value={repr(self.switch_value)}, field5={repr(self.field5)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)})'
 
     def write_packet(self, writer):
         pass
@@ -205,7 +210,7 @@ class SwitchPacket:
         )
     
     def __repr__(self):
-        pass
+        return f'SwitchPacket(switch_value={repr(self.switch_value)}, array1={repr(self.array1)}, array2={repr(self.array2)}, field1={repr(self.field1)}, array3={repr(self.array3)})'
 
     def write_packet(self, writer):
         pass
@@ -227,7 +232,7 @@ class SwitchPacket:
             generated_src_code
         )
 
-    def test_basic_switch(self):
+    def test_compound_switch(self):
         packet_data = {
             'name': 'Switch Packet',
             'id': 0x11,
@@ -323,7 +328,7 @@ class Field1:
         return dl.int_size + dl.string_size(self.field2)
 
     def __repr__(self):
-        pass
+        return f'Field1(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
         pass
@@ -341,7 +346,7 @@ class Field2:
         return dl.int_size + dl.string_size(self.field2)
 
     def __repr__(self):
-        pass
+        return f'Field2(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
         pass
@@ -359,7 +364,7 @@ class Field4:
         return dl.int_size + dl.string_size(self.field2)
 
     def __repr__(self):
-        pass
+        return f'Field4(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
         pass
@@ -394,7 +399,7 @@ class SwitchPacket:
         )
     
     def __repr__(self):
-        pass
+        return f'SwitchPacket(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)})'
 
     def write_packet(self, writer):
         pass
@@ -515,7 +520,7 @@ class SwitchPacket:
         )
     
     def __repr__(self):
-        pass
+        return f'SwitchPacket(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)})'
 
     def write_packet(self, writer):
         pass

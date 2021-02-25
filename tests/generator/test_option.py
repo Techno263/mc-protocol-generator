@@ -37,7 +37,7 @@ class TestOption(unittest.TestCase):
                     return 0 if self.optional_int == None else dl.int_size
                 
                 def __repr__(self):
-                    pass
+                    return f'IntOptionPacket(optional_int={repr(self.optional_int)})'
 
                 def write_packet(self, writer):
                     pass
@@ -91,7 +91,7 @@ class TestOption(unittest.TestCase):
                     return 0 if self.optional_string == None else dl.string_size(self.optional_string)
 
                 def __repr__(self):
-                    pass
+                    return f'StringOptionPacket(optional_string={repr(self.optional_string)})'
 
                 def write_packet(self, writer):
                     pass
@@ -157,7 +157,7 @@ class TestOption(unittest.TestCase):
                     )
 
                 def __repr__(self):
-                    pass
+                    return f'ArrayOptionPacket(optional_array={repr(self.optional_array)})'
 
                 def write_packet(self, writer):
                     pass
@@ -219,7 +219,7 @@ class OptionalCompound:
         return dl.short_size + dl.string_size(self.field2)
 
     def __repr__(self):
-        pass
+        return f'OptionalCompound(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
         pass
@@ -241,7 +241,7 @@ class CompoundOptionPacket:
         return 0 if self.optional_compound == None else len(self.optional_compound)
 
     def __repr__(self):
-        pass
+        return f'CompoundOptionPacket(optional_compound={repr(self.optional_compound)})'
 
     def write_packet(self, writer):
         pass

@@ -163,8 +163,15 @@ class Packet:
 
     def get_repr_body_nodes(self):
         field_nodes = [
-            field.get_repr_body_nodes()
-            for field in self.fields
+            nodes
+            for nodes_list in zip(
+                *[
+                    field.get_repr_body_nodes()
+                    for field in self.fields
+                ]
+            )
+            for nodes in nodes_list
+            if len(nodes) > 0
         ]
         nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
         nodes[0::2] = field_nodes

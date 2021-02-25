@@ -59,21 +59,24 @@ class Base(ABC):
 
     def get_repr_body_nodes(self):
         return [
-            Constant(value=f'{self.field_name}='),
-            FormattedValue(
-                value=Call(
-                    func=Name(id='repr', ctx=Load()),
-                    args=[
-                        Attribute(
-                            value=Name(id='self', ctx=Load()),
-                            attr=self.field_name,
-                            ctx=Load()
-                        )
-                    ],
-                    keywords=[]
-                ),
-                conversion=-1
-            )
+            [
+                Constant(value=f'{self.field_name}='),
+                FormattedValue(
+                    value=Call(
+                        func=Name(id='repr', ctx=Load()),
+                        args=[
+                            Attribute(
+                                value=Name(id='self', ctx=Load()),
+                                attr=self.field_name,
+                                ctx=Load()
+                            )
+                        ],
+                        keywords=[]
+                    ),
+                    conversion=-1
+                )
+            ],
+            []
         ]
 
     @abstractmethod

@@ -138,7 +138,7 @@ class TestPacket(unittest.TestCase):
                     )
                 
                 def __repr__(self):
-                    pass
+                    return f'BossBar(uuid={repr(self.uuid)}, action={repr(self.action)}, title={repr(self.title)}, health={repr(self.health)}, color={repr(self.color)}, division={repr(self.division)}, flags={repr(self.flags)})'
 
                 def write_packet(self, writer):
                     pass

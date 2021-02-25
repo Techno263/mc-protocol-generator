@@ -276,7 +276,10 @@ class Switch(Base):
             },
             key=lambda x: x.index)
         ]
-        field_nodes = [
+        nodes = [None, [Constant(value=', ')]] * (len(opt_args) - 1) + [None]
+        nodes[0::2] = opt_args
+        nodes = [node for node_list in nodes for node in node_list]
+        return [
             [
                 Constant(value=f'{self.switch_type.field_name}='),
                 FormattedValue(
@@ -293,14 +296,7 @@ class Switch(Base):
                     ),
                     conversion=-1
                 )
-            ]
-        ] + opt_args
-        nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
-        nodes[0::2] = field_nodes
-        return [
-            node
-            for node_list in nodes
-            for node in node_list
+            ], nodes
         ]
 
     def get_write_node(self, writer_name):
