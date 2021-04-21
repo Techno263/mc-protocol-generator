@@ -210,8 +210,6 @@ class Packet:
         ]
 
     def get_write_packet_body_nodes(self, writer_name):
-        from ast import Pass
-        return [Pass()]
         return [
             Expr(
                 value=Call(
@@ -222,7 +220,7 @@ class Packet:
                     ),
                     args=[
                         Attribute(
-                            value=Name(id='self', ctx=Load()),
+                            value=Name(id=self.class_name, ctx=Load()),
                             attr='id',
                             ctx=Load()
                         )

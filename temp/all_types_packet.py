@@ -115,6 +115,7 @@ class AllTypesPacket:
         )
 
     def write_packet(self, writer):
+        writer.write_varint(AllTypesPacket.id)
         writer.write_angle(self.angle)
         writer.write_varint(len(self.array))
         for item in self.array:

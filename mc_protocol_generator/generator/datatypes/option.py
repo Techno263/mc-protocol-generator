@@ -39,7 +39,7 @@ class Option(Base):
                 ctx=Load()
             )
         else:
-            obj = value_override
+            obj = object_override
         if node_override == None:
             node = Attribute(
                 value=obj,
@@ -68,8 +68,14 @@ class Option(Base):
             )
         )
 
-    def get_write_node(self, writer_name):
-        pass
+    def get_write_node(self, writer_name, node_override=None):
+        if node_override == None:
+            pass
+        else:
+            node = node_override
+        return [
+            
+        ]
 
     def get_read_node(self, reader_name):
         pass

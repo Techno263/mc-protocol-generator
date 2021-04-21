@@ -61,8 +61,28 @@ class Compound(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name):
-        pass
+    def get_write_node(self, writer_name, node_override=None):
+        if node_override == None:
+            node = value=Attribute(
+                value=Name(id='self', ctx=Load()),
+                attr=self.field_name,
+                ctx=Load()
+            )
+        else:
+            node = node_override
+        return [
+            Expr(
+                value=Call(
+                    func=Attribute(
+                        node,
+                        attr='write_data',
+                        ctx=Load()
+                    ),
+                    args=[Name(id=writer_name, ctx=Load())],
+                    keywords=[]
+                )
+            )
+        ]
 
     def get_read_node(self, reader_name):
         pass

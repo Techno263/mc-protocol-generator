@@ -126,6 +126,7 @@ class AllTypesPacket:
         return f'ComplexPacket(angle={repr(self.angle)}, array={repr(self.array)}, bool={repr(self.bool)}, byte={repr(self.byte)}, chat={repr(self.chat)}, compound={repr(self.compound)}, double={repr(self.double)}, entity_metadata={repr(self.entity_metadata)}, float={repr(self.float)}, identifier={repr(self.identifier)}, int={repr(self.int)}, long={repr(self.long)}, nbt={repr(self.nbt)}, option={repr(self.option)}, position={repr(self.position)}, short={repr(self.short)}, slot={repr(self.slot)}, string={repr(self.string)}, switch_value={repr(self.switch_value)}, switch_short={repr(self.switch_short)}, switch_long={repr(self.switch_long)}, switch_int={repr(self.switch_int)}, ubyte={repr(self.ubyte)}, ushort={repr(self.ushort)}, uuid={repr(self.uuid)}, varint={repr(self.varint)}, varlong={repr(self.varlong)})'
 
     def write_packet(self, writer):
+        writer.write_varint(AllTypesPacket.id)
         writer.write_angle(self.angle)
         writer.write_varint(len(self.array))
         for item in self.array:

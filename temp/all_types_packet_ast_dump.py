@@ -1437,6 +1437,23 @@ Module(
                             value=Call(
                                 func=Attribute(
                                     value=Name(id='writer', ctx=Load()),
+                                    attr='write_varint',
+                                    ctx=Load(),
+                                ),
+                                args=[
+                                    Attribute(
+                                        value=Name(id='AllTypesPacket', ctx=Load()),
+                                        attr='id',
+                                        ctx=Load(),
+                                    )
+                                ],
+                                keywords=[],
+                            )
+                        ),
+                        Expr(
+                            value=Call(
+                                func=Attribute(
+                                    value=Name(id='writer', ctx=Load()),
                                     attr='write_angle',
                                     ctx=Load(),
                                 ),

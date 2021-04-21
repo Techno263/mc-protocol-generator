@@ -1,3 +1,4 @@
 [submodule "mc_protocol_generator/generator/minecraft-protocol"]
 	path = mc_protocol_generator/generator/minecraft-protocol
 	url = https://github.com/Techno263/minecraft-protocol.git
+	branch = main

@@ -40,8 +40,28 @@ class String(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name):
-        pass
+    def get_write_node(self, writer_name, node_override=None):
+        if node_override == None:
+            node = Attribute(
+                value=Name(id='self', ctx=Load()),
+                attr=self.field_name,
+                ctx=Load()
+            )
+        else:
+            node = node_override
+        return [
+            Expr(
+                value=Call(
+                    func=Attribute(
+                        value=Name(id=writer_name, ctx=Load()),
+                        attr='write_string',
+                        ctx=Load()
+                    ),
+                    args=[node],
+                    keywords=[]
+                )
+            )
+        ]
 
     def get_read_node(self, reader_name):
         pass
