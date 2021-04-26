@@ -1,5 +1,5 @@
 from .base import Base
-from ast import (Attribute, Name, Load)
+from ast import (Attribute, Name, Load, Expr, Call)
 
 class Bool(Base):
     @property
@@ -16,7 +16,7 @@ class Bool(Base):
             ctx=Load()
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = Attribute(
                 value=Name(id='self', ctx=Load()),

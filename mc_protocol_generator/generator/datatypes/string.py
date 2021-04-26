@@ -1,6 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
-from ast import Call, Attribute, Name, Load
+from ast import Call, Attribute, Name, Load, Expr
 
 class String(Base):
     @property
@@ -40,7 +40,7 @@ class String(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = Attribute(
                 value=Name(id='self', ctx=Load()),

@@ -1,6 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
-from ast import Attribute, Name, Load
+from ast import Attribute, Name, Load, Expr, Call
 
 class Int(Base):
     @property
@@ -17,7 +17,7 @@ class Int(Base):
             ctx=Load()
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = Attribute(
                 value=Name(id='self', ctx=Load()),

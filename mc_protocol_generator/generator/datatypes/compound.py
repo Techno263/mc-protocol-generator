@@ -3,7 +3,7 @@ from mc_protocol_generator.generator.util import format_class_name
 from ..code_generator_context import CodeGeneratorContext
 from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef, Assign,
                  Store, arguments, arg, BinOp, Add, Return, JoinedStr,
-                 Constant)
+                 Constant, Expr)
 
 class_sizer_name = 'dl'
 class_writer_name = 'writer'
@@ -61,7 +61,7 @@ class Compound(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = value=Attribute(
                 value=Name(id='self', ctx=Load()),
@@ -164,8 +164,11 @@ class Compound(Base):
         ]
 
     def _get_class_write_data_body_nodes(self):
-        from ast import Pass
-        return [Pass()]
+        return [
+            node
+            for field in self.fields
+            for node in field.get_write_nodes(class_writer_name)
+        ]
 
     def _get_class_read_data_body_nodes(self):
         from ast import Pass

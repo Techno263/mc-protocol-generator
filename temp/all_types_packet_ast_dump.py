@@ -525,13 +525,37 @@ Module(
                                                                                                                 left=BinOp(
                                                                                                                     left=BinOp(
                                                                                                                         left=BinOp(
-                                                                                                                            left=Attribute(
-                                                                                                                                value=Name(
-                                                                                                                                    id='dl',
+                                                                                                                            left=BinOp(
+                                                                                                                                left=Call(
+                                                                                                                                    func=Attribute(
+                                                                                                                                        value=Name(
+                                                                                                                                            id='dl',
+                                                                                                                                            ctx=Load(),
+                                                                                                                                        ),
+                                                                                                                                        attr='varint_size',
+                                                                                                                                        ctx=Load(),
+                                                                                                                                    ),
+                                                                                                                                    args=[
+                                                                                                                                        Attribute(
+                                                                                                                                            value=Name(
+                                                                                                                                                id='AllTypesPacket',
+                                                                                                                                                ctx=Load(),
+                                                                                                                                            ),
+                                                                                                                                            attr='id',
+                                                                                                                                            ctx=Load(),
+                                                                                                                                        )
+                                                                                                                                    ],
+                                                                                                                                    keywords=[],
+                                                                                                                                ),
+                                                                                                                                op=Add(),
+                                                                                                                                right=Attribute(
+                                                                                                                                    value=Name(
+                                                                                                                                        id='dl',
+                                                                                                                                        ctx=Load(),
+                                                                                                                                    ),
+                                                                                                                                    attr='angle_size',
                                                                                                                                     ctx=Load(),
                                                                                                                                 ),
-                                                                                                                                attr='angle_size',
-                                                                                                                                ctx=Load(),
                                                                                                                             ),
                                                                                                                             op=Add(),
                                                                                                                             right=BinOp(
@@ -1677,6 +1701,50 @@ Module(
                                 keywords=[],
                             )
                         ),
+                        Assign(
+                            targets=[Name(id='option_check', ctx=Store())],
+                            value=Compare(
+                                left=Attribute(
+                                    value=Name(id='self', ctx=Load()), attr='option', ctx=Load()
+                                ),
+                                ops=[NotEq()],
+                                comparators=[Constant(value=None)],
+                            ),
+                        ),
+                        Expr(
+                            value=Call(
+                                func=Attribute(
+                                    value=Name(id='writer', ctx=Load()),
+                                    attr='write_bool',
+                                    ctx=Load(),
+                                ),
+                                args=[Name(id='option_check', ctx=Load())],
+                                keywords=[],
+                            )
+                        ),
+                        If(
+                            test=Name(id='option_check', ctx=Load()),
+                            body=[
+                                Expr(
+                                    value=Call(
+                                        func=Attribute(
+                                            value=Name(id='writer', ctx=Load()),
+                                            attr='write_int',
+                                            ctx=Load(),
+                                        ),
+                                        args=[
+                                            Attribute(
+                                                value=Name(id='self', ctx=Load()),
+                                                attr='option',
+                                                ctx=Load(),
+                                            )
+                                        ],
+                                        keywords=[],
+                                    )
+                                )
+                            ],
+                            orelse=[],
+                        ),
                         Expr(
                             value=Call(
                                 func=Attribute(
@@ -1832,7 +1900,21 @@ Module(
                                             )
                                         ),
                                     ],
-                                    orelse=[],
+                                    orelse=[
+                                        If(
+                                            test=Compare(
+                                                left=Attribute(
+                                                    value=Name(id='self', ctx=Load()),
+                                                    attr='switch_value',
+                                                    ctx=Load(),
+                                                ),
+                                                ops=[Eq()],
+                                                comparators=[Constant(value=2)],
+                                            ),
+                                            body=[Pass()],
+                                            orelse=[],
+                                        )
+                                    ],
                                 )
                             ],
                         ),

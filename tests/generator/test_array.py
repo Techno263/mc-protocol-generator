@@ -28,16 +28,16 @@ class TestArray(unittest.TestCase):
         }
         packet_src_code = '''
             class IntArrayPacket:
-                name = 'Int Array Packet'
-                id = 16
-                state = 'handshaking'
-                bound_to = 'client'
+                packet_name = 'Int Array Packet'
+                packet_id = 16
+                packet_state = 'handshaking'
+                packet_bound_to = 'client'
 
                 def __init__(self, int_array):
                     self.int_array = int_array
 
                 def __len__(self):
-                    return (
+                    return dl.varint_size(IntArrayPacket.packet_id) + (
                         dl.varint_size(len(self.int_array))
                         + sum((dl.int_size for item in self.int_array))
                     )
@@ -46,7 +46,10 @@ class TestArray(unittest.TestCase):
                     return f'IntArrayPacket(int_array={repr(self.int_array)})'
 
                 def write_packet(self, writer):
-                    pass
+                    writer.write_varint(IntArrayPacket.packet_id)
+                    writer.write_varint(len(self.int_array))
+                    for item in self.int_array:
+                        writer.write_int(item)
 
                 @staticmethod
                 def read_packet(reader):
@@ -88,16 +91,16 @@ class TestArray(unittest.TestCase):
         }
         packet_src_code = '''
             class StringArrayPacket:
-                name = 'String Array Packet'
-                id = 1
-                state = 'login'
-                bound_to = 'server'
+                packet_name = 'String Array Packet'
+                packet_id = 1
+                packet_state = 'login'
+                packet_bound_to = 'server'
 
                 def __init__(self, string_array):
                     self.string_array = string_array
 
                 def __len__(self):
-                    return (
+                    return dl.varint_size(StringArrayPacket.packet_id) + (
                         dl.varint_size(len(self.string_array))
                         + sum((dl.string_size(item) for item in self.string_array))
                     )
@@ -106,7 +109,10 @@ class TestArray(unittest.TestCase):
                     return f'StringArrayPacket(string_array={repr(self.string_array)})'
 
                 def write_packet(self, writer):
-                    pass
+                    writer.write_varint(StringArrayPacket.packet_id)
+                    writer.write_varint(len(self.string_array))
+                    for item in self.string_array:
+                        writer.write_string(item)
 
                 @staticmethod
                 def read_packet(reader):
@@ -193,17 +199,21 @@ class MatchesItem:
         return f'MatchesItem(match={repr(self.match)}, tooltip={repr(self.tooltip)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_string(self.match)
+        tooltip_check = self.tooltip != None
+        writer.write_bool(tooltip_check)
+        if tooltip_check:
+            writer.write_chat(self.tooltip)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class TabCompleteClientbound:
-    name = 'Tab-Complete (clientbound)'
-    id = 15
-    state = 'play'
-    bound_to = 'client'
+    packet_name = 'Tab-Complete (clientbound)'
+    packet_id = 15
+    packet_state = 'play'
+    packet_bound_to = 'client'
 
     def __init__(self, id, start, length, matches):
         self.id = id
@@ -213,7 +223,8 @@ class TabCompleteClientbound:
 
     def __len__(self):
         return (
-            dl.varint_size(self.id)
+            dl.varint_size(TabCompleteClientbound.packet_id)
+            + dl.varint_size(self.id)
             + dl.varint_size(self.start)
             + dl.varint_size(self.length)
             + (
@@ -226,7 +237,13 @@ class TabCompleteClientbound:
         return f'TabCompleteClientbound(id={repr(self.id)}, start={repr(self.start)}, length={repr(self.length)}, matches={repr(self.matches)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(TabCompleteClientbound.packet_id)
+        writer.write_varint(self.id)
+        writer.write_varint(self.start)
+        writer.write_varint(self.length)
+        writer.write_varint(len(self.matches))
+        for item in self.matches:
+            item.write_data(writer)
 
     @staticmethod
     def read_packet(reader):
@@ -276,16 +293,16 @@ class TabCompleteClientbound:
         }
         packet_src_code = '''
             class ArrayArrayPacket:
-                name = 'Array Array Packet'
-                id = 0
-                state = 'play'
-                bound_to = 'client'
+                packet_name = 'Array Array Packet'
+                packet_id = 0
+                packet_state = 'play'
+                packet_bound_to = 'client'
 
                 def __init__(self, outer_array):
                     self.outer_array = outer_array
 
                 def __len__(self):
-                    return (
+                    return dl.varint_size(ArrayArrayPacket.packet_id) + (
                         dl.int_size
                         + sum((
                             dl.varint_size(len(item))
@@ -298,7 +315,12 @@ class TabCompleteClientbound:
                     return f'ArrayArrayPacket(outer_array={repr(self.outer_array)})'
 
                 def write_packet(self, writer):
-                    pass
+                    writer.write_varint(ArrayArrayPacket.packet_id)
+                    writer.write_int(len(self.outer_array))
+                    for item in self.outer_array:
+                        writer.write_varint(len(item))
+                        for item in item:
+                            writer.write_string(item)
 
                 @staticmethod
                 def read_packet(reader):
@@ -345,28 +367,36 @@ class TabCompleteClientbound:
         }
         packet_src_code = '''
             class ArrayOptionPacket:
-                name = 'Array Option Packet'
-                id = 0
-                state = 'play'
-                bound_to = 'client'
+                packet_name = 'Array Option Packet'
+                packet_id = 0
+                packet_state = 'play'
+                packet_bound_to = 'client'
 
                 def __init__(self, outer_array):
                     self.outer_array = outer_array
 
                 def __len__(self):
                     return (
-                        dl.varint_size(len(self.outer_array))
-                        + sum ((
-                            0 if item == None else dl.varint_size(item)
-                            for item in self.outer_array
-                        ))
+                        dl.varint_size(ArrayOptionPacket.packet_id) + (
+                            dl.varint_size(len(self.outer_array))
+                            + sum ((
+                                0 if item == None else dl.varint_size(item)
+                                for item in self.outer_array
+                            ))
+                        )
                     )
                 
                 def __repr__(self):
                     return f'ArrayOptionPacket(outer_array={repr(self.outer_array)})'
 
                 def write_packet(self, writer):
-                    pass
+                    writer.write_varint(ArrayOptionPacket.packet_id)
+                    writer.write_varint(len(self.outer_array))
+                    for item in self.outer_array:
+                        outer_array_item_check = item != None
+                        writer.write_bool(outer_array_item_check)
+                        if outer_array_item_check:
+                            writer.write_varint(item)
 
                 @staticmethod
                 def read_packet(reader):

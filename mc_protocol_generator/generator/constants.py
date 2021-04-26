@@ -1,0 +1,7 @@
+DATATYPE_SIZER_VAR = 'dl'
+DATATYPE_WRITER_VAR = 'writer'
+DATATYPE_READER_VAR = 'reader'
+PACKET_CLASS_NAME_VAR = 'packet_name'
+PACKET_CLASS_ID_VAR = 'packet_id'
+PACKET_CLASS_STATE_VAR = 'packet_state'
+PACKET_CLASS_BOUND_TO_VAR = 'packet_bound_to'

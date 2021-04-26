@@ -18,10 +18,13 @@ class TestPacket(unittest.TestCase):
                 },
                 {
                     'name': 'Action',
+                    'type': 'VarInt'
+                },
+                {
                     'type': 'Switch',
                     'options': {
                         'switch': {
-                            'type': 'VarInt'
+                            'field': 'Action'
                         },
                         'cases': [
                             {
@@ -100,10 +103,10 @@ class TestPacket(unittest.TestCase):
         }
         packet_src_code = '''
             class BossBar:
-                name = 'Boss Bar'
-                id = 12
-                state = 'play'
-                bound_to = 'client'
+                packet_name = 'Boss Bar'
+                packet_id = 12
+                packet_state = 'play'
+                packet_bound_to = 'client'
 
                 def __init__(self,
                              uuid,
@@ -123,8 +126,10 @@ class TestPacket(unittest.TestCase):
                     self.flags = flags
 
                 def __len__(self):
-                    return dl.uuid_size + (
-                        dl.varint_size(self.action)
+                    return (
+                        dl.varint_size(BossBar.packet_id)
+                        + dl.uuid_size
+                        + dl.varint_size(self.action)
                         + (
                             dl.chat_size(self.title) + dl.float_size + dl.varint_size(self.color) + dl.varint_size(self.division) + dl.ubyte_size
                             if self.action == 0 else
@@ -141,7 +146,26 @@ class TestPacket(unittest.TestCase):
                     return f'BossBar(uuid={repr(self.uuid)}, action={repr(self.action)}, title={repr(self.title)}, health={repr(self.health)}, color={repr(self.color)}, division={repr(self.division)}, flags={repr(self.flags)})'
 
                 def write_packet(self, writer):
-                    pass
+                    writer.write_varint(BossBar.packet_id)
+                    writer.write_uuid(self.uuid)
+                    writer.write_varint(self.action)
+                    if self.action == 0:
+                        writer.write_chat(self.title)
+                        writer.write_float(self.health)
+                        writer.write_varint(self.color)
+                        writer.write_varint(self.division)
+                        writer.write_ubyte(self.flags)
+                    elif self.action == 1:
+                        pass
+                    elif self.action == 2:
+                        writer.write_float(self.health)
+                    elif self.action == 3:
+                        writer.write_chat(self.title)
+                    elif self.action == 4:
+                        writer.write_varint(self.color)
+                        writer.write_varint(self.division)
+                    elif self.action == 5:
+                        writer.write_ubyte(self.flags)
 
                 @staticmethod
                 def read_packet(reader):

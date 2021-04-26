@@ -65,6 +65,7 @@ class AllTypesPacket:
 
     def __len__(self):
         return (
+            dl.varint_size(AllTypesPacket.id) +
             dl.angle_size +
             (
                 dl.varint_size(len(self.array)) +
@@ -131,6 +132,10 @@ class AllTypesPacket:
         writer.write_int(self.int)
         writer.write_long(self.long)
         writer.write_nbt(self.nbt)
+        option_check = self.option != None
+        writer.write_bool(option_check)
+        if option_check:
+            writer.write_int(self.option)
         writer.write_position(self.position)
         writer.write_short(self.short)
         writer.write_slot(self.slot)
@@ -141,6 +146,8 @@ class AllTypesPacket:
         elif self.switch_value == 1:
             writer.write_long(self.switch_long)
             writer.write_int(self.switch_int)
+        elif self.switch_value == 2:
+            pass
         writer.write_ubyte(self.ubyte)
         writer.write_ushort(self.ushort)
         writer.write_uuid(self.uuid)

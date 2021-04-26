@@ -99,10 +99,10 @@ class TestBasic(unittest.TestCase):
         }
         packet_src_code = '''
             class BasicPacket:
-                name = 'Basic Packet'
-                id = 255
-                state = 'play'
-                bound_to = 'server'
+                packet_name = 'Basic Packet'
+                packet_id = 255
+                packet_state = 'play'
+                packet_bound_to = 'server'
 
                 def __init__(self, angle_value, bool_value, byte_value,
                              chat_value, double_value, entity_metadata_value,
@@ -134,6 +134,7 @@ class TestBasic(unittest.TestCase):
                 
                 def __len__(self):
                     return (
+                        dl.varint_size(BasicPacket.packet_id) +
                         dl.angle_size +
                         dl.bool_size +
                         dl.byte_size +
@@ -160,7 +161,27 @@ class TestBasic(unittest.TestCase):
                     return f'BasicPacket(angle_value={repr(self.angle_value)}, bool_value={repr(self.bool_value)}, byte_value={repr(self.byte_value)}, chat_value={repr(self.chat_value)}, double_value={repr(self.double_value)}, entity_metadata_value={repr(self.entity_metadata_value)}, float_value={repr(self.float_value)}, identifier_value={repr(self.identifier_value)}, int_value={repr(self.int_value)}, long_value={repr(self.long_value)}, nbt_value={repr(self.nbt_value)}, position_value={repr(self.position_value)}, short_value={repr(self.short_value)}, slot_value={repr(self.slot_value)}, string_value={repr(self.string_value)}, ubyte_value={repr(self.ubyte_value)}, ushort_value={repr(self.ushort_value)}, uuid_value={repr(self.uuid_value)}, varint_value={repr(self.varint_value)}, varlong_value={repr(self.varlong_value)})'
 
                 def write_packet(self, writer):
-                    pass
+                    writer.write_varint(BasicPacket.packet_id)
+                    writer.write_angle(self.angle_value)
+                    writer.write_bool(self.bool_value)
+                    writer.write_byte(self.byte_value)
+                    writer.write_chat(self.chat_value)
+                    writer.write_double(self.double_value)
+                    writer.write_entity_metadata(self.entity_metadata_value)
+                    writer.write_float(self.float_value)
+                    writer.write_identifier(self.identifier_value)
+                    writer.write_int(self.int_value)
+                    writer.write_long(self.long_value)
+                    writer.write_nbt(self.nbt_value)
+                    writer.write_position(self.position_value)
+                    writer.write_short(self.short_value)
+                    writer.write_slot(self.slot_value)
+                    writer.write_string(self.string_value)
+                    writer.write_ubyte(self.ubyte_value)
+                    writer.write_ushort(self.ushort_value)
+                    writer.write_uuid(self.uuid_value)
+                    writer.write_varint(self.varint_value)
+                    writer.write_varlong(self.varlong_value)
 
                 @staticmethod
                 def read_packet(reader):

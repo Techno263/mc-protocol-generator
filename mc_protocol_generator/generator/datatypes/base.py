@@ -80,7 +80,7 @@ class Base(ABC):
         ]
 
     @abstractmethod
-    def get_write_node(self, writer_name):
+    def get_write_nodes(self, writer_name):
         pass
 
     @abstractmethod

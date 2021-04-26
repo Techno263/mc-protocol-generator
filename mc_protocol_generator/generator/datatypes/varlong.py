@@ -1,5 +1,5 @@
 from .base import Base
-from ast import Attribute, Name, Load, Call
+from ast import Attribute, Name, Load, Call, Expr
 
 class VarLong(Base):
     @property
@@ -35,7 +35,7 @@ class VarLong(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = Attribute(
                 value=Name(id='self', ctx=Load()),

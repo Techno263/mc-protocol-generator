@@ -1,8 +1,9 @@
 from ast import (BinOp, Call, Add, IfExp, Compare, Attribute, Name, Load, Eq,
-                 Constant, arg, Assign, Store, FormattedValue)
+                 Constant, arg, Assign, Store, FormattedValue, If, Pass)
 from collections.abc import Iterator
 from collections import namedtuple
 from .base import Base
+from mc_protocol_generator.generator.util import format_field_name
 
 Case = namedtuple('Case', ['value', 'fields'])
 
@@ -70,6 +71,39 @@ def get_fields_len_node(sizer_name, fields, obj):
         )
     return bin_op
 
+def get_field_write_nodes(writer_name, fields):
+    if len(fields) == 0:
+        return [Pass()]
+    return [
+        node
+        for field in fields
+        for node in field.get_write_nodes(writer_name)
+    ]
+
+def get_cases_write_node(writer_name, cases, switch_value_node, ):
+    if len(cases) == 0:
+        return []
+    if_op = If(
+        test=Compare(
+            left=switch_value_node,
+            ops=[Eq()],
+            comparators=[Constant(value=cases[-1].value)]
+        ),
+        body=get_field_write_nodes(writer_name, cases[-1].fields),
+        orelse=[]
+    )
+    for case in cases[-2::-1]:
+        if_op = If(
+            test=Compare(
+                left=switch_value_node,
+                ops=[Eq()],
+                comparators=[Constant(value=case.value)]
+            ),
+            body=get_field_write_nodes(writer_name, case.fields),
+            orelse=[if_op]
+        )
+    return [if_op]
+
 def validate(switch):
     from .datatype import all_types, switch_types
     switch_fields = {
@@ -78,7 +112,7 @@ def validate(switch):
         for field in case.fields
         for field_name in field.get_field_name_set()
     }
-    if switch.field_name in switch_fields:
+    if switch.field in switch_fields:
         raise Exception(f'Case field names cannot intersect with switch name')
     valid_types = all_types - switch_types
     if any(
@@ -89,22 +123,23 @@ def validate(switch):
         raise Exception(f'Invalid field type, {field_type}')
 
 class Switch(Base):
-    def __init__(self, name, switch_type, cases):
-        super().__init__(name)
-        self.switch_type = switch_type
+    def __init__(self, field, cases):
+        super().__init__(None)
+        self.field = field
         self.cases = cases
         validate(self)
 
+    @property
+    def switch_field_name(self):
+        return format_field_name(self.field)
+
     def get_field_name_set(self):
-        return (
-            {self.field_name}
-            | {
-                field_name
-                for case in self.cases
-                for field in case.fields
-                for field_name in field.get_field_name_set()
-            }
-        )
+        return {
+            field_name
+            for case in self.cases
+            for field in case.fields
+            for field_name in field.get_field_name_set()
+        }
 
     def get_init_args(self):
         stateful_enumerate = StatefulEnumerator()
@@ -121,31 +156,11 @@ class Switch(Base):
             },
             key=lambda x: x.index)
         ]
-        return (
-            [arg(arg=self.switch_type.field_name)],
-            opt_args
-        )
+        return [], opt_args
 
     def get_init_body_nodes(self):
         stateful_enumerate = StatefulEnumerator()
         return [
-            Assign(
-                targets=[
-                    Attribute(
-                        value=Name(
-                            id='self',
-                            ctx=Load()
-                        ),
-                        attr=self.switch_type.field_name,
-                        ctx=Store()
-                    )
-                ],
-                value=Name(
-                    id=self.switch_type.field_name,
-                    ctx=Load()
-                )
-            )
-        ] + [
             Assign(
                 targets=[
                     Attribute(
@@ -185,7 +200,7 @@ class Switch(Base):
         if node_override == None:
             node = Attribute(
                 value=obj,
-                attr=self.field_name,
+                attr=self.switch_field_name,
                 ctx=Load()
             )
         else:
@@ -197,13 +212,13 @@ class Switch(Base):
                 test=Compare(
                     left=Attribute(
                         value=obj,
-                        attr=self.switch_type.field_name,
+                        attr=self.switch_field_name,
                         ctx=Load()
                     ),
                     ops=[Eq()],
                     comparators=[
                         Constant(
-                            value=self.switch_type.type(self.cases[-1].value)
+                            value=self.cases[-1].value
                         )
                     ]
                 ),
@@ -219,13 +234,13 @@ class Switch(Base):
                     test=Compare(
                         left=Attribute(
                             value=obj,
-                            attr=self.switch_type.field_name,
+                            attr=self.switch_field_name,
                             ctx=Load()
                         ),
                         ops=[Eq()],
                         comparators=[
                             Constant(
-                                value=self.switch_type.type(case.value)
+                                value=case.value
                             )
                         ]
                     ),
@@ -236,6 +251,8 @@ class Switch(Base):
                     ),
                     orelse=case_node
                 )
+        return case_node
+        '''
         return BinOp(
             left=self.switch_type.get_len_node(
                 sizer_name,
@@ -244,6 +261,7 @@ class Switch(Base):
             op=Add(),
             right=case_node
         )
+        '''
 
     def get_repr_body_nodes(self):
         stateful_enumerate = StatefulEnumerator()
@@ -279,28 +297,23 @@ class Switch(Base):
         nodes = [None, [Constant(value=', ')]] * (len(opt_args) - 1) + [None]
         nodes[0::2] = opt_args
         nodes = [node for node_list in nodes for node in node_list]
-        return [
-            [
-                Constant(value=f'{self.switch_type.field_name}='),
-                FormattedValue(
-                    value=Call(
-                        func=Name(id='repr', ctx=Load()),
-                        args=[
-                            Attribute(
-                                value=Name(id='self', ctx=Load()),
-                                attr=self.switch_type.field_name,
-                                ctx=Load()
-                            )
-                        ],
-                        keywords=[]
-                    ),
-                    conversion=-1
-                )
-            ], nodes
-        ]
+        return [nodes]
 
-    def get_write_node(self, writer_name):
-        pass
+    def get_write_nodes(self, writer_name, node_override=None):
+        if node_override == None:
+            node = Attribute(
+                value=Name(id='self', ctx=Load()),
+                attr=self.switch_field_name,
+                ctx=Load()
+            )
+        else:
+            node = node_override
+        return get_cases_write_node(
+            writer_name,
+            self.cases,
+            node
+        )
+        
 
     def get_read_node(self, reader_name):
         pass
@@ -318,9 +331,7 @@ class Switch(Base):
     def from_protocol_data(data):
         from ..packet import parse_field
         assert data['type'] == 'Switch'
-        name = data['name'] if 'name' in data else None
-        switch_type = parse_field(data['options']['switch'])
-        switch_type.name = name
+        field = data['options']['switch']['field']
         cases = [
             Case(
                 case['value'],
@@ -328,4 +339,4 @@ class Switch(Base):
             )
             for case in data['options']['cases']
         ]
-        return Switch(name, switch_type, cases)
+        return Switch(field, cases)

@@ -1,12 +1,21 @@
-from ast import (Module, ClassDef, Assign, Name, Store, Constant,
+from ast import (
+    Module, ClassDef, Assign, Name, Store, Constant,
     FunctionDef, arguments, arg, Attribute, Load, Return, BinOp, Add,
-    JoinedStr, Expr, Call, unparse, fix_missing_locations, Pass)
+    JoinedStr, Expr, Call, unparse, fix_missing_locations, Pass
+)
 from mc_protocol_generator.generator.util import format_class_name
 from black import Mode, format_str
-from .datatypes import (Angle, Array, Bool, Byte, Chat, Compound, Double,
-                        EntityMetadata, Float, Identifier, Int, Long, NBT,
-                        Option, Position, Short, Slot, String, Switch, UByte,
-                        UShort, UUID, VarInt, VarLong)
+from .datatypes import (
+    Angle, Array, Bool, Byte, Chat, Compound, Double,
+    EntityMetadata, Float, Identifier, Int, Long, NBT,
+    Option, Position, Short, Slot, String, Switch, UByte,
+    UShort, UUID, VarInt, VarLong
+)
+from mc_protocol_generator.generator.constants import (
+    DATATYPE_SIZER_VAR, DATATYPE_WRITER_VAR, DATATYPE_READER_VAR,
+    PACKET_CLASS_NAME_VAR, PACKET_CLASS_ID_VAR,
+    PACKET_CLASS_STATE_VAR, PACKET_CLASS_BOUND_TO_VAR
+)
 
 def parse_field(field_data):
     data_type = field_data['type']
@@ -116,14 +125,20 @@ class Packet:
         return format_class_name(self.name)
 
     def get_init_args(self):
+        # get args and optional args from fields
         args, opt_args = zip(*[field.get_init_args() for field in self.fields])
+        # concatenate all arg lists into one list
         args = [arg for arg_list in args for arg in arg_list]
+        # split optional arg variables and their default values into their own lists
         opt_args = tuple(
             map(
                 list,
                 zip(*[opt_arg for opt_arg_list in opt_args for opt_arg in opt_arg_list])
             )
         )
+        # if there are no optional args, opt_args will be an empty tuple
+        # check if there is an opt_args list and defaults list
+        # if not make a tuple with two empty lists
         opt_args, defaults = opt_args if len(opt_args) == 2 else ([], [])
         args = [arg(arg='self', annotation=None, type_comment=None)] + args + opt_args
         return arguments(
@@ -144,16 +159,24 @@ class Packet:
         ]
 
     def get_len_body_nodes(self, sizer_name):
-        if len(self.fields) == 0:
-            return [Return(value=Constant(value=0, kind=None))]
-        elif len(self.fields) == 1:
-            return [Return(value=self.fields[0].get_len_node(sizer_name))]
-        bin_op = BinOp(
-            left=self.fields[0].get_len_node(sizer_name),
-            op=Add(),
-            right=self.fields[1].get_len_node(sizer_name)
+        bin_op = Call(
+            func=Attribute(
+                value=Name(id=sizer_name, ctx=Load()),
+                attr='varint_size',
+                ctx=Load()
+            ),
+            args=[
+                Attribute(
+                    value=Name(id=self.class_name, ctx=Load()),
+                    attr=PACKET_CLASS_ID_VAR,
+                    ctx=Load()
+                )
+            ],
+            keywords=[]
         )
-        for field in self.fields[2:]:
+        if len(self.fields) == 0:
+            return [Return(bin_op)]
+        for field in self.fields:
             bin_op = BinOp(
                 left=bin_op,
                 op=Add(),
@@ -221,7 +244,7 @@ class Packet:
                     args=[
                         Attribute(
                             value=Name(id=self.class_name, ctx=Load()),
-                            attr='id',
+                            attr=PACKET_CLASS_ID_VAR,
                             ctx=Load()
                         )
                     ],
@@ -229,8 +252,9 @@ class Packet:
                 )
             )
         ] + [
-            field.get_write_node(writer_name)
+            node
             for field in self.fields
+            for node in field.get_write_nodes(writer_name)
         ]
 
     def get_read_packet_body_nodes(self, reader_name):
@@ -261,9 +285,6 @@ class Packet:
         ]
 
     def test_get_packet_ast_node(self):
-        sizer_name = 'dl'
-        writer_name = 'writer'
-        reader_name = 'reader'
         module = Module(
             body=[
                 *self.get_module_body_nodes(),
@@ -310,9 +331,6 @@ class Packet:
         return module
 
     def get_packet_ast_node(self):
-        sizer_name = 'dl'
-        writer_name = 'writer'
-        reader_name = 'reader'
         module = Module(
             body=[
                 *self.get_module_body_nodes(),
@@ -322,22 +340,22 @@ class Packet:
                     keywords=[],
                     body=[
                         Assign(
-                            targets=[Name(id='name', ctx=Store())],
+                            targets=[Name(id=PACKET_CLASS_NAME_VAR, ctx=Store())],
                             value=Constant(value=self.name, kind=None),
                             type_comment=None
                         ),
                         Assign(
-                            targets=[Name(id='id', ctx=Store())],
+                            targets=[Name(id=PACKET_CLASS_ID_VAR, ctx=Store())],
                             value=Constant(value=self.id, kind=None),
                             type_comment=None
                         ),
                         Assign(
-                            targets=[Name(id='state', ctx=Store())],
+                            targets=[Name(id=PACKET_CLASS_STATE_VAR, ctx=Store())],
                             value=Constant(value=self.state, kind=None),
                             type_comment=None
                         ),
                         Assign(
-                            targets=[Name(id='bound_to', ctx=Store())],
+                            targets=[Name(id=PACKET_CLASS_BOUND_TO_VAR, ctx=Store())],
                             value=Constant(value=self.bound_to, kind=None),
                             type_comment=None
                         ),
@@ -360,7 +378,7 @@ class Packet:
                                 kwarg=None,
                                 defaults=[]
                             ),
-                            body=self.get_len_body_nodes(sizer_name),
+                            body=self.get_len_body_nodes(DATATYPE_SIZER_VAR),
                             decorator_list=[],
                             returns=None,
                             type_comment=None
@@ -387,7 +405,7 @@ class Packet:
                                 posonlyargs=[],
                                 args=[
                                     arg(arg='self', annotation=None, type_comment=None),
-                                    arg(arg='writer', annotation=None, type_comment=None)
+                                    arg(arg=DATATYPE_WRITER_VAR, annotation=None, type_comment=None)
                                 ],
                                 vararg=None,
                                 kwonlyargs=[],
@@ -395,7 +413,7 @@ class Packet:
                                 kwarg=None,
                                 defaults=[]
                             ),
-                            body=self.get_write_packet_body_nodes(writer_name),
+                            body=self.get_write_packet_body_nodes(DATATYPE_WRITER_VAR),
                             decorator_list=[],
                             returns=None,
                             type_comment=None
@@ -404,14 +422,18 @@ class Packet:
                             name='read_packet',
                             args=arguments(
                                 posonlyargs=[],
-                                args=[arg(arg='reader', annotation=None, type_comment=None)],
+                                args=[arg(
+                                    arg=DATATYPE_READER_VAR,
+                                    annotation=None,
+                                    type_comment=None
+                                )],
                                 vararg=None,
                                 kwonlyargs=[],
                                 kw_defaults=[],
                                 kwarg=None,
                                 defaults=[]
                             ),
-                            body=self.get_read_packet_body_nodes(reader_name),
+                            body=self.get_read_packet_body_nodes(DATATYPE_READER_VAR),
                             decorator_list=[Name(id='staticmethod', ctx=Load())],
                             returns=None,
                             type_comment=None

@@ -1,6 +1,7 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
-from ast import (BinOp, Add, Call, Name, Load, GeneratorExp, Attribute, comprehension, Store)
+from ast import (BinOp, Add, Call, Name, Load, GeneratorExp, Attribute, comprehension, Store,
+    Expr, For)
 
 def validate(array):
     from .datatype import integer_types, all_types, switch_types
@@ -98,7 +99,7 @@ class Array(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = Attribute(
                 value=Name(id='self', ctx=Load()),
@@ -108,30 +109,22 @@ class Array(Base):
         else:
             node = node_override
         return [
-            Expr(
-                value=Call(
-                    func=Attribute(
-                        value=Name(id=writer_name, ctx=Load()),
-                        attr='write_varint',
-                        ctx=Load()
-                    ),
-                    args=[
-                        Call(
-                            func=Name(id='len', ctx=Load()),
-                            args=[node],
-                            keywords=[]
-                        )
-                    ],
+            self.count_type.get_write_nodes(
+                writer_name,
+                Call(
+                    func=Name(id='len', ctx=Load()),
+                    args=[node],
                     keywords=[]
                 )
             ),
             For(
                 target=Name(id='item', ctx=Store()),
                 iter=node,
-                body=self.element_type.get_write_node(
+                body=self.element_type.get_write_nodes(
                     writer_name,
                     Name(id='item', ctx=Store())
-                )
+                ),
+                orelse=[]
             )
         ]
 

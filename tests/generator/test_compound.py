@@ -163,29 +163,52 @@ class BasicCompound:
         return f'BasicCompound(angle_value={repr(self.angle_value)}, bool_value={repr(self.bool_value)}, byte_value={repr(self.byte_value)}, chat_value={repr(self.chat_value)}, double_value={repr(self.double_value)}, entity_metadata_value={repr(self.entity_metadata_value)}, float_value={repr(self.float_value)}, identifier_value={repr(self.identifier_value)}, int_value={repr(self.int_value)}, long_value={repr(self.long_value)}, nbt_value={repr(self.nbt_value)}, position_value={repr(self.position_value)}, short_value={repr(self.short_value)}, slot_value={repr(self.slot_value)}, string_value={repr(self.string_value)}, ubyte_value={repr(self.ubyte_value)}, ushort_value={repr(self.ushort_value)}, uuid_value={repr(self.uuid_value)}, varint_value={repr(self.varint_value)}, varlong_value={repr(self.varlong_value)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_angle(self.angle_value)
+        writer.write_bool(self.bool_value)
+        writer.write_byte(self.byte_value)
+        writer.write_chat(self.chat_value)
+        writer.write_double(self.double_value)
+        writer.write_entity_metadata(self.entity_metadata_value)
+        writer.write_float(self.float_value)
+        writer.write_identifier(self.identifier_value)
+        writer.write_int(self.int_value)
+        writer.write_long(self.long_value)
+        writer.write_nbt(self.nbt_value)
+        writer.write_position(self.position_value)
+        writer.write_short(self.short_value)
+        writer.write_slot(self.slot_value)
+        writer.write_string(self.string_value)
+        writer.write_ubyte(self.ubyte_value)
+        writer.write_ushort(self.ushort_value)
+        writer.write_uuid(self.uuid_value)
+        writer.write_varint(self.varint_value)
+        writer.write_varlong(self.varlong_value)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class BasicCompoundPacket:
-    name = 'Basic Compound Packet'
-    id = 4
-    state = 'play'
-    bound_to = 'client'
+    packet_name = 'Basic Compound Packet'
+    packet_id = 4
+    packet_state = 'play'
+    packet_bound_to = 'client'
 
     def __init__(self, basic_compound):
         self.basic_compound = basic_compound
 
     def __len__(self):
-        return len(self.basic_compound)
+        return (
+            dl.varint_size(BasicCompoundPacket.packet_id)
+            + len(self.basic_compound)
+        )
     
     def __repr__(self):
         return f'BasicCompoundPacket(basic_compound={repr(self.basic_compound)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(BasicCompoundPacket.packet_id)
+        self.basic_compound.write_data(writer)
 
     @staticmethod
     def read_packet(reader):
@@ -247,29 +270,35 @@ class Compound:
         return f'Compound(array={repr(self.array)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_varint(len(self.array))
+        for item in self.array:
+            writer.write_string(item)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class CompoundWithArrayPacket:
-    name = 'Compound with Array Packet'
-    id = 0
-    state = 'play'
-    bound_to = 'client'
+    packet_name = 'Compound with Array Packet'
+    packet_id = 0
+    packet_state = 'play'
+    packet_bound_to = 'client'
 
     def __init__(self, compound):
         self.compound = compound
 
     def __len__(self):
-        return len(self.compound)
+        return (
+            dl.varint_size(CompoundWithArrayPacket.packet_id)
+            + len(self.compound)
+        )
 
     def __repr__(self):
         return f'CompoundWithArrayPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(CompoundWithArrayPacket.packet_id)
+        self.compound.write_data(writer)
 
     @staticmethod
     def read_packet(reader):
@@ -329,7 +358,7 @@ class NestedCompound:
         return f'NestedCompound(num={repr(self.num)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_int(self.num)
 
     @staticmethod
     def read_data(reader):
@@ -346,29 +375,33 @@ class Compound:
         return f'Compound(nested_compound={repr(self.nested_compound)})'
 
     def write_data(self, writer):
-        pass
+        self.nested_compound.write_data(writer)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class CompoundWithCompoundPacket:
-    name = 'Compound with Compound Packet'
-    id = 0
-    state = 'play'
-    bound_to = 'client'
+    packet_name = 'Compound with Compound Packet'
+    packet_id = 0
+    packet_state = 'play'
+    packet_bound_to = 'client'
 
     def __init__(self, compound):
         self.compound = compound
 
     def __len__(self):
-        return len(self.compound)
+        return (
+            dl.varint_size(CompoundWithCompoundPacket.packet_id)
+            + len(self.compound)
+        )
 
     def __repr__(self):
         return f'CompoundWithCompoundPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(CompoundWithCompoundPacket.packet_id)
+        self.compound.write_data(writer)
 
     @staticmethod
     def read_packet(reader):
@@ -425,29 +458,36 @@ class Compound:
         return f'Compound(int_option={repr(self.int_option)})'
 
     def write_data(self, writer):
-        pass
+        int_option_check = self.int_option != None
+        writer.write_bool(int_option_check)
+        if int_option_check:
+            writer.write_int(self.int_option)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class CompoundWithOptionPacket:
-    name = 'Compound with Option Packet'
-    id = 0
-    state = 'play'
-    bound_to = 'client'
+    packet_name = 'Compound with Option Packet'
+    packet_id = 0
+    packet_state = 'play'
+    packet_bound_to = 'client'
 
     def __init__(self, compound):
         self.compound = compound
 
     def __len__(self):
-        return len(self.compound)
+        return (
+            dl.varint_size(CompoundWithOptionPacket.packet_id)
+            + len(self.compound)
+        )
 
     def __repr__(self):
         return f'CompoundWithOptionPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(CompoundWithOptionPacket.packet_id)
+        self.compound.write_data(writer)
 
     @staticmethod
     def read_packet(reader):
@@ -480,10 +520,13 @@ class CompoundWithOptionPacket:
                         'fields': [
                             {
                                 'name': 'Switch Value',
+                                'type': 'VarInt'
+                            },
+                            {
                                 'type': 'Switch',
                                 'options': {
                                     'switch': {
-                                        'type': 'VarInt'
+                                        'field': 'Switch Value'
                                     },
                                     'cases': [
                                         {
@@ -550,29 +593,40 @@ class Compound:
         return f'Compound(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_varint(self.switch_value)
+        if self.switch_value == 0:
+            writer.write_string(self.field1)
+            writer.write_int(self.field2)
+        elif self.switch_value == 1:
+            writer.write_string(self.field1)
+        elif self.switch_value == 2:
+            writer.write_int(self.field2)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class CompoundWithSwitchPacket:
-    name = 'Compound with Switch Packet'
-    id = 0
-    state = 'play'
-    bound_to = 'client'
+    packet_name = 'Compound with Switch Packet'
+    packet_id = 0
+    packet_state = 'play'
+    packet_bound_to = 'client'
 
     def __init__(self, compound):
         self.compound = compound
 
     def __len__(self):
-        return len(self.compound)
+        return (
+            dl.varint_size(CompoundWithSwitchPacket.packet_id)
+            + len(self.compound)
+        )
 
     def __repr__(self):
         return f'CompoundWithSwitchPacket(compound={repr(self.compound)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(CompoundWithSwitchPacket.packet_id)
+        self.compound.write_data(writer)
 
     @staticmethod
     def read_packet(reader):

@@ -1,5 +1,6 @@
 from .base import Base
-from ast import IfExp, Compare, Attribute, Name, Load, Eq, Constant
+from ast import (IfExp, Compare, Attribute, Name, Load, Eq, Constant, Assign, Store,
+    NotEq, Expr, Call, If)
 
 def validate(option):
     from .datatype import all_types, switch_types, option_types
@@ -8,13 +9,25 @@ def validate(option):
 
 class Option(Base):
     def __init__(self, name, optional_type):
-        super().__init__(name)
         self.optional_type = optional_type
+        self.optional_type.name = name
         validate(self)
+
+    @property
+    def name(self):
+        return self.optional_type.name
+
+    @name.setter
+    def name(self, value):
+        self.optional_type.name = value
 
     @property
     def field_name(self):
         return self.optional_type.field_name
+    
+    @property
+    def check_var_name(self):
+        return f'{self.field_name}_check'
 
     def get_field_name_set(self):
         return self.optional_type.get_field_name_set()
@@ -68,13 +81,43 @@ class Option(Base):
             )
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
-            pass
+            node = Attribute(
+                value=Name(id='self', ctx=Load()),
+                attr=self.field_name,
+                ctx=Load()
+            )
         else:
             node = node_override
         return [
-            
+            Assign(
+                targets=[Name(id=self.check_var_name, ctx=Store())],
+                value=Compare(
+                    left=node,
+                    ops=[NotEq()],
+                    comparators=[Constant(value=None)]
+                )
+            ),
+            Expr(
+                value=Call(
+                    func=Attribute(
+                        value=Name(id=writer_name, ctx=Load()),
+                        attr='write_bool',
+                        ctx=Load()
+                    ),
+                    args=[Name(id=self.check_var_name, ctx=Load())],
+                    keywords=[]
+                )
+            ),
+            If(
+                test=Name(id=self.check_var_name, ctx=Load()),
+                body=self.optional_type.get_write_nodes(
+                    writer_name,
+                    node
+                ),
+                orelse=[]
+            )
         ]
 
     def get_read_node(self, reader_name):

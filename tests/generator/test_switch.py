@@ -14,10 +14,13 @@ class TestSwitch(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Switch Value',
+                    'type': 'VarInt'
+                },
+                {
                     'type': 'Switch',
                     'options': {
                         'switch': {
-                            'type': 'VarInt'
+                            'field': 'Switch Value'
                         },
                         'cases': [
                             {
@@ -61,10 +64,10 @@ class TestSwitch(unittest.TestCase):
         }
         packet_src_code = '''
 class SwitchPacket:
-    name = 'Switch Packet'
-    id = 17
-    state = 'play'
-    bound_to = 'server'
+    packet_name = 'Switch Packet'
+    packet_id = 17
+    packet_state = 'play'
+    packet_bound_to = 'server'
 
     def __init__(self, switch_value, field5, field1=None, field2=None, field3=None,
                  field4=None):
@@ -76,17 +79,31 @@ class SwitchPacket:
         self.field5 = field5
 
     def __len__(self):
-        return dl.varint_size(self.switch_value) + (
-            dl.varint_size(self.field1) + dl.ubyte_size + dl.short_size if self.switch_value == 0 else 
+        return (
+            dl.varint_size(SwitchPacket.packet_id)
+            + dl.varint_size(self.switch_value) + (
+                dl.varint_size(self.field1) + dl.ubyte_size + dl.short_size if self.switch_value == 0 else 
                 dl.string_size(self.field4) if self.switch_value == 1 else
-                    0 if self.switch_value == 2 else 0
-        ) + dl.varint_size(self.field5)
+                0 if self.switch_value == 2 else 0
+            )
+            + dl.varint_size(self.field5)
+        )
     
     def __repr__(self):
-        return f'SwitchPacket(switch_value={repr(self.switch_value)}, field5={repr(self.field5)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)})'
+        return f'SwitchPacket(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)}, field5={repr(self.field5)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(SwitchPacket.packet_id)
+        writer.write_varint(self.switch_value)
+        if self.switch_value == 0:
+            writer.write_varint(self.field1)
+            writer.write_ubyte(self.field2)
+            writer.write_short(self.field3)
+        elif self.switch_value == 1:
+            writer.write_string(self.field4)
+        elif self.switch_value == 2:
+            pass
+        writer.write_varint(self.field5)
 
     @staticmethod
     def read_packet(reader):
@@ -113,11 +130,14 @@ class SwitchPacket:
             'bound_to': 'server',
             'fields': [
                 {
-                    'name': 'Switch Value',
+                    "name": "Switch Value",
+                    "type": "VarInt"
+                },
+                {
                     'type': 'Switch',
                     'options': {
                         'switch': {
-                            'type': 'VarInt'
+                            'field': "Switch Value"
                         },
                         'cases': [
                             {
@@ -181,10 +201,10 @@ class SwitchPacket:
         }
         packet_src_code = '''
 class SwitchPacket:
-    name = 'Switch Packet'
-    id = 17
-    state = 'play'
-    bound_to = 'server'
+    packet_name = 'Switch Packet'
+    packet_id = 17
+    packet_state = 'play'
+    packet_bound_to = 'server'
 
     def __init__(self, switch_value, array1=None, array2=None, field1=None,
                  array3=None):
@@ -195,25 +215,43 @@ class SwitchPacket:
         self.array3 = array3
 
     def __len__(self):
-        return dl.varint_size(self.switch_value) + (
-            dl.varint_size(len(self.array1)) 
-            + sum((dl.string_size(item) for item in self.array1))
-            + (dl.int_size + sum((dl.short_size for item in self.array2)))
-            + dl.short_size
-            if self.switch_value == 0
-            else dl.ushort_size
-            + sum((dl.chat_size(item) for item in self.array3))
-            if self.switch_value == 1 
-            else 0
-            if self.switch_value == 2
-            else 0
+        return (
+            dl.varint_size(SwitchPacket.packet_id)
+            + dl.varint_size(self.switch_value) + (
+                dl.varint_size(len(self.array1)) 
+                + sum((dl.string_size(item) for item in self.array1))
+                + (dl.int_size + sum((dl.short_size for item in self.array2)))
+                + dl.short_size
+                if self.switch_value == 0
+                else dl.ushort_size
+                + sum((dl.chat_size(item) for item in self.array3))
+                if self.switch_value == 1 
+                else 0
+                if self.switch_value == 2
+                else 0
+            )
         )
     
     def __repr__(self):
         return f'SwitchPacket(switch_value={repr(self.switch_value)}, array1={repr(self.array1)}, array2={repr(self.array2)}, field1={repr(self.field1)}, array3={repr(self.array3)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(SwitchPacket.packet_id)
+        writer.write_varint(self.switch_value)
+        if self.switch_value == 0:
+            writer.write_varint(len(self.array1))
+            for item in self.array1:
+                writer.write_string(item)
+            writer.write_int(len(self.array2))
+            for item in self.array2:
+                writer.write_short(item)
+            writer.write_short(self.field1)
+        elif self.switch_value == 1:
+            writer.write_ushort(len(self.array3))
+            for item in self.array3:
+                writer.write_chat(item)
+        elif self.switch_value == 2:
+            pass
 
     @staticmethod
     def read_packet(reader):
@@ -241,10 +279,13 @@ class SwitchPacket:
             'fields': [
                 {
                     'name': 'Switch Value',
+                    'type': 'VarInt'
+                },
+                {
                     'type': 'Switch',
                     'options': {
                         'switch': {
-                            'type': 'VarInt'
+                            'field': 'Switch Value'
                         },
                         'cases': [
                             {
@@ -331,7 +372,8 @@ class Field1:
         return f'Field1(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_int(self.field1)
+        writer.write_string(self.field2)
 
     @staticmethod
     def read_data(reader):
@@ -349,7 +391,8 @@ class Field2:
         return f'Field2(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_int(self.field1)
+        writer.write_string(self.field2)
 
     @staticmethod
     def read_data(reader):
@@ -367,17 +410,18 @@ class Field4:
         return f'Field4(field1={repr(self.field1)}, field2={repr(self.field2)})'
 
     def write_data(self, writer):
-        pass
+        writer.write_int(self.field1)
+        writer.write_string(self.field2)
 
     @staticmethod
     def read_data(reader):
         pass
 
 class SwitchPacket:
-    name = 'Switch Packet'
-    id = 17
-    state = 'play'
-    bound_to = 'server'
+    packet_name = 'Switch Packet'
+    packet_id = 17
+    packet_state = 'play'
+    packet_bound_to = 'server'
 
     def __init__(self, switch_value, field1=None, field2=None, field3=None,
                  field4=None):
@@ -388,21 +432,33 @@ class SwitchPacket:
         self.field4 = field4
 
     def __len__(self):
-        return dl.varint_size(self.switch_value) + (
-            len(self.field1) + len(self.field2) + dl.short_size
-            if self.switch_value == 0
-            else len(self.field4)
-            if self.switch_value == 1
-            else 0
-            if self.switch_value == 2
-            else 0
+        return (
+            dl.varint_size(SwitchPacket.packet_id)
+            + dl.varint_size(self.switch_value) + (
+                len(self.field1) + len(self.field2) + dl.short_size
+                if self.switch_value == 0
+                else len(self.field4)
+                if self.switch_value == 1
+                else 0
+                if self.switch_value == 2
+                else 0
+            )
         )
     
     def __repr__(self):
         return f'SwitchPacket(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(SwitchPacket.packet_id)
+        writer.write_varint(self.switch_value)
+        if self.switch_value == 0:
+            self.field1.write_data(writer)
+            self.field2.write_data(writer)
+            writer.write_short(self.field3)
+        elif self.switch_value == 1:
+            self.field4.write_data(writer)
+        elif self.switch_value == 2:
+            pass
 
     @staticmethod
     def read_packet(reader):
@@ -430,10 +486,13 @@ class SwitchPacket:
             'fields': [
                 {
                     'name': 'Switch Value',
+                    'type': 'VarInt'
+                },
+                {
                     'type': 'Switch',
                     'options': {
                         'switch': {
-                            'type': 'VarInt'
+                            'field': 'Switch Value'
                         },
                         'cases': [
                             {
@@ -493,10 +552,10 @@ class SwitchPacket:
         }
         packet_src_code = '''
 class SwitchPacket:
-    name = 'Switch Packet'
-    id = 17
-    state = 'play'
-    bound_to = 'server'
+    packet_name = 'Switch Packet'
+    packet_id = 17
+    packet_state = 'play'
+    packet_bound_to = 'server'
 
     def __init__(self, switch_value, field1=None, field2=None, field3=None,
                  field4=None):
@@ -507,23 +566,47 @@ class SwitchPacket:
         self.field4 = field4
 
     def __len__(self):
-        return dl.varint_size(self.switch_value) + (
-            (0 if self.field1 == None else dl.varint_size(self.field1))
-            + (0 if self.field2 == None else dl.ubyte_size)
-            + (0 if self.field3 == None else dl.short_size)
-            if self.switch_value == 0
-            else (0 if self.field4 == None else dl.string_size(self.field4))
-            if self.switch_value == 1
-            else 0
-            if self.switch_value == 2
-            else 0
+        return (
+            dl.varint_size(SwitchPacket.packet_id)
+            + dl.varint_size(self.switch_value) + (
+                (0 if self.field1 == None else dl.varint_size(self.field1))
+                + (0 if self.field2 == None else dl.ubyte_size)
+                + (0 if self.field3 == None else dl.short_size)
+                if self.switch_value == 0
+                else (0 if self.field4 == None else dl.string_size(self.field4))
+                if self.switch_value == 1
+                else 0
+                if self.switch_value == 2
+                else 0
+            )
         )
     
     def __repr__(self):
         return f'SwitchPacket(switch_value={repr(self.switch_value)}, field1={repr(self.field1)}, field2={repr(self.field2)}, field3={repr(self.field3)}, field4={repr(self.field4)})'
 
     def write_packet(self, writer):
-        pass
+        writer.write_varint(SwitchPacket.packet_id)
+        writer.write_varint(self.switch_value)
+        if self.switch_value == 0:
+            field1_check = self.field1 != None
+            writer.write_bool(field1_check)
+            if field1_check:
+                writer.write_varint(self.field1)
+            field2_check = self.field2 != None
+            writer.write_bool(field2_check)
+            if field2_check:
+                writer.write_ubyte(self.field2)
+            field3_check = self.field3 != None
+            writer.write_bool(field3_check)
+            if field3_check:
+                writer.write_short(self.field3)
+        elif self.switch_value == 1:
+            field4_check = self.field4 != None
+            writer.write_bool(field4_check)
+            if field4_check:
+                writer.write_string(self.field4)
+        elif self.switch_value == 2:
+            pass
 
     @staticmethod
     def read_packet(reader):

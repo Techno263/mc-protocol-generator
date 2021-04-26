@@ -1,5 +1,5 @@
 from .base import Base
-from ast import Call, Attribute, Name, Load
+from ast import Call, Attribute, Name, Load, Expr
 
 class NBT(Base):
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
@@ -31,7 +31,7 @@ class NBT(Base):
             keywords=[]
         )
 
-    def get_write_node(self, writer_name, node_override=None):
+    def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
             node = Attribute(
                 value=Name(id='self', ctx=Load()),
