@@ -14,10 +14,10 @@ class TestSwitch(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Switch Value',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
-                    'type': 'Switch',
+                    'type': 'switch',
                     'options': {
                         'switch': {
                             'field': 'Switch Value'
@@ -28,15 +28,15 @@ class TestSwitch(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Field1',
-                                        'type': 'VarInt'
+                                        'type': 'varint'
                                     },
                                     {
                                         'name': 'Field2',
-                                        'type': 'UByte'
+                                        'type': 'ubyte'
                                     },
                                     {
                                         'name': 'Field3',
-                                        'type': 'Short'
+                                        'type': 'short'
                                     }
                                 ]
                             },
@@ -45,7 +45,7 @@ class TestSwitch(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Field4',
-                                        'type': 'String'
+                                        'type': 'string'
                                     }
                                 ]
                             },
@@ -58,7 +58,7 @@ class TestSwitch(unittest.TestCase):
                 },
                 {
                     'name': 'field5',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 }
             ]
         }
@@ -131,10 +131,10 @@ class SwitchPacket:
             'fields': [
                 {
                     "name": "Switch Value",
-                    "type": "VarInt"
+                    "type": "varint"
                 },
                 {
-                    'type': 'Switch',
+                    'type': 'switch',
                     'options': {
                         'switch': {
                             'field': "Switch Value"
@@ -145,31 +145,31 @@ class SwitchPacket:
                                 'fields': [
                                     {
                                         'name': 'Array1',
-                                        'type': 'Array',
+                                        'type': 'array',
                                         'options': {
                                             'count': {
-                                                'type': 'VarInt'
+                                                'type': 'varint'
                                             },
                                             'element': {
-                                                'type': 'String'
+                                                'type': 'string'
                                             }
                                         }
                                     },
                                     {
                                         'name': 'Array2',
-                                        'type': 'Array',
+                                        'type': 'array',
                                         'options': {
                                             'count': {
-                                                'type': 'Int'
+                                                'type': 'int'
                                             },
                                             'element': {
-                                                'type': 'Short'
+                                                'type': 'short'
                                             }
                                         }
                                     },
                                     {
                                         'name': 'Field1',
-                                        'type': 'Short'
+                                        'type': 'short'
                                     }
                                 ]
                             },
@@ -178,13 +178,13 @@ class SwitchPacket:
                                 'fields': [
                                     {
                                         'name': 'Array3',
-                                        'type': 'Array',
+                                        'type': 'array',
                                         'options': {
                                             'count': {
-                                                'type': 'UShort'
+                                                'type': 'ushort'
                                             },
                                             'element': {
-                                                'type': 'Chat'
+                                                'type': 'chat'
                                             }
                                         }
                                     }
@@ -279,10 +279,10 @@ class SwitchPacket:
             'fields': [
                 {
                     'name': 'Switch Value',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
-                    'type': 'Switch',
+                    'type': 'switch',
                     'options': {
                         'switch': {
                             'field': 'Switch Value'
@@ -293,39 +293,39 @@ class SwitchPacket:
                                 'fields': [
                                     {
                                         'name': 'Field1',
-                                        'type': 'Compound',
+                                        'type': 'compound',
                                         'options': {
                                             'fields': [
                                                 {
                                                     'name': 'Field1',
-                                                    'type': 'Int'
+                                                    'type': 'int'
                                                 },
                                                 {
                                                     'name': 'Field2',
-                                                    'type': 'String'
+                                                    'type': 'string'
                                                 }
                                             ]
                                         }
                                     },
                                     {
                                         'name': 'Field2',
-                                        'type': 'Compound',
+                                        'type': 'compound',
                                         'options': {
                                             'fields': [
                                                 {
                                                     'name': 'Field1',
-                                                    'type': 'Int'
+                                                    'type': 'int'
                                                 },
                                                 {
                                                     'name': 'Field2',
-                                                    'type': 'String'
+                                                    'type': 'string'
                                                 }
                                             ]
                                         }
                                     },
                                     {
                                         'name': 'Field3',
-                                        'type': 'Short'
+                                        'type': 'short'
                                     }
                                 ]
                             },
@@ -334,16 +334,16 @@ class SwitchPacket:
                                 'fields': [
                                     {
                                         'name': 'Field4',
-                                        'type': 'Compound',
+                                        'type': 'compound',
                                         'options': {
                                             'fields': [
                                                 {
                                                     'name': 'Field1',
-                                                    'type': 'Int'
+                                                    'type': 'int'
                                                 },
                                                 {
                                                     'name': 'Field2',
-                                                    'type': 'String'
+                                                    'type': 'string'
                                                 }
                                             ]
                                         }
@@ -486,10 +486,10 @@ class SwitchPacket:
             'fields': [
                 {
                     'name': 'Switch Value',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
-                    'type': 'Switch',
+                    'type': 'switch',
                     'options': {
                         'switch': {
                             'field': 'Switch Value'
@@ -500,28 +500,28 @@ class SwitchPacket:
                                 'fields': [
                                     {
                                         'name': 'Field1',
-                                        'type': 'Option',
+                                        'type': 'option',
                                         'options': {
                                             'optional': {
-                                                'type': 'VarInt'
+                                                'type': 'varint'
                                             }
                                         }
                                     },
                                     {
                                         'name': 'Field2',
-                                        'type': 'Option',
+                                        'type': 'option',
                                         'options': {
                                             'optional': {
-                                                'type': 'UByte'
+                                                'type': 'ubyte'
                                             }
                                         }
                                     },
                                     {
                                         'name': 'Field3',
-                                        'type': 'Option',
+                                        'type': 'option',
                                         'options': {
                                             'optional': {
-                                                'type': 'Short'
+                                                'type': 'short'
                                             }
                                         }
                                     }
@@ -532,10 +532,10 @@ class SwitchPacket:
                                 'fields': [
                                     {
                                         'name': 'Field4',
-                                        'type': 'Option',
+                                        'type': 'option',
                                         'options': {
                                             'optional': {
-                                                'type': 'String'
+                                                'type': 'string'
                                             }
                                         }
                                     }
@@ -569,11 +569,18 @@ class SwitchPacket:
         return (
             dl.varint_size(SwitchPacket.packet_id)
             + dl.varint_size(self.switch_value) + (
-                (0 if self.field1 == None else dl.varint_size(self.field1))
-                + (0 if self.field2 == None else dl.ubyte_size)
-                + (0 if self.field3 == None else dl.short_size)
+                dl.bool_size
+                + (0 if self.field1 == None else dl.varint_size(self.field1))
+                + (
+                    dl.bool_size
+                    + (0 if self.field2 == None else dl.ubyte_size)
+                )
+                + (
+                    dl.bool_size
+                    + (0 if self.field3 == None else dl.short_size)
+                )
                 if self.switch_value == 0
-                else (0 if self.field4 == None else dl.string_size(self.field4))
+                else dl.bool_size + (0 if self.field4 == None else dl.string_size(self.field4))
                 if self.switch_value == 1
                 else 0
                 if self.switch_value == 2

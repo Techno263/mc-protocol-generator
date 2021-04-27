@@ -14,10 +14,10 @@ class TestOption(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Optional Int',
-                    'type': 'Option',
+                    'type': 'option',
                     'options': {
                         'optional': {
-                            'type': 'Int'
+                            'type': 'int'
                         }
                     }
                 }
@@ -35,8 +35,10 @@ class TestOption(unittest.TestCase):
 
                 def __len__(self):
                     return (
-                        dl.varint_size(IntOptionPacket.packet_id)
-                        + (0 if self.optional_int == None else dl.int_size)
+                        dl.varint_size(IntOptionPacket.packet_id) + (
+                            dl.bool_size
+                            + (0 if self.optional_int == None else dl.int_size)
+                        )
                     )
                 
                 def __repr__(self):
@@ -75,10 +77,10 @@ class TestOption(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Optional String',
-                    'type': 'Option',
+                    'type': 'option',
                     'options': {
                         'optional': {
-                            'type': 'String'
+                            'type': 'string'
                         }
                     }
                 }
@@ -95,9 +97,13 @@ class TestOption(unittest.TestCase):
                     self.optional_string = optional_string
 
                 def __len__(self):
-                    return (
-                        dl.varint_size(StringOptionPacket.packet_id)
-                        + (0 if self.optional_string == None else dl.string_size(self.optional_string))
+                    return dl.varint_size(StringOptionPacket.packet_id) + (
+                        dl.bool_size
+                        + (
+                            0 
+                            if self.optional_string == None
+                            else dl.string_size(self.optional_string)
+                        )
                     )
 
                 def __repr__(self):
@@ -136,16 +142,16 @@ class TestOption(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Optional Array',
-                    'type': 'Option',
+                    'type': 'option',
                     'options': {
                         'optional': {
-                            'type': 'Array',
+                            'type': 'array',
                             'options': {
                                 'count': {
-                                    'type': 'VarInt'
+                                    'type': 'varint'
                                 },
                                 'element': {
-                                    'type': 'Int'
+                                    'type': 'int'
                                 }
                             }
                         }
@@ -164,9 +170,8 @@ class TestOption(unittest.TestCase):
                     self.optional_array = optional_array
 
                 def __len__(self):
-                    return (
-                        dl.varint_size(ArrayOptionPacket.packet_id)
-                        + (
+                    return dl.varint_size(ArrayOptionPacket.packet_id) + (
+                        dl.bool_size + (
                             0 if self.optional_array == None else 
                             dl.varint_size(len(self.optional_array))
                             + sum((dl.int_size for item in self.optional_array))
@@ -211,19 +216,19 @@ class TestOption(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Optional Compound',
-                    'type': 'Option',
+                    'type': 'option',
                     'options': {
                         'optional': {
-                            'type': 'Compound',
+                            'type': 'compound',
                             'options': {
                                 'fields': [
                                     {
                                         'name': 'Field1',
-                                        'type': 'Short'
+                                        'type': 'short'
                                     },
                                     {
                                         'name': 'Field2',
-                                        'type': 'String'
+                                        'type': 'string'
                                     }
                                 ]
                             }
@@ -262,9 +267,12 @@ class CompoundOptionPacket:
         self.optional_compound = optional_compound
 
     def __len__(self):
-        return (
-            dl.varint_size(CompoundOptionPacket.packet_id)
-            + (0 if self.optional_compound == None else len(self.optional_compound))
+        return dl.varint_size(CompoundOptionPacket.packet_id) + (
+            dl.bool_size + (
+                0
+                if self.optional_compound == None
+                else len(self.optional_compound)
+            )
         )
 
     def __repr__(self):

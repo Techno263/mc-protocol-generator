@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Call, Attribute, Name, Load, Expr
+from mc_protocol_generator.generator.datatypes.constants import CHAT_DATATYPE_NAME
 
 class Chat(Base):
     @property
@@ -63,6 +64,6 @@ class Chat(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'Chat'
+        assert data['type'] == CHAT_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return Chat(name)

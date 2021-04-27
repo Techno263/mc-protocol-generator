@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Attribute, Name, Load, Expr, Call
+from mc_protocol_generator.generator.datatypes.constants import UUID_DATATYPE_NAME
 
 class UUID(Base):
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
@@ -40,6 +41,6 @@ class UUID(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'UUID'
+        assert data['type'] == UUID_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return UUID(name)

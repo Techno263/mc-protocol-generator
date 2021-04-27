@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from mc_protocol_generator.generator.datatypes.constants import ARRAY_DATATYPE_NAME
 from ast import (BinOp, Add, Call, Name, Load, GeneratorExp, Attribute, comprehension, Store,
     Expr, For)
 
@@ -137,7 +138,7 @@ class Array(Base):
     @staticmethod
     def from_protocol_data(data):
         from ..packet import parse_field
-        assert data['type'] == 'Array'
+        assert data['type'] == ARRAY_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         count_type = parse_field(data['options']['count'])
         element_type = parse_field(data['options']['element'])

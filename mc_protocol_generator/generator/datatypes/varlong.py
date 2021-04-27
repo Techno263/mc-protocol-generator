@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Attribute, Name, Load, Call, Expr
+from mc_protocol_generator.generator.datatypes.constants import VARLONG_DATATYPE_NAME
 
 class VarLong(Base):
     @property
@@ -63,6 +64,6 @@ class VarLong(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'VarLong'
+        assert data['type'] == VARLONG_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return VarLong(name)

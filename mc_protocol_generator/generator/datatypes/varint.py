@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from mc_protocol_generator.generator.datatypes.constants import VARINT_DATATYPE_NAME
 from ast import Call, Attribute, Name, Load, Expr
 
 class VarInt(Base):
@@ -64,6 +65,6 @@ class VarInt(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'VarInt'
+        assert data['type'] == VARINT_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return VarInt(name)

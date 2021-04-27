@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from mc_protocol_generator.generator.datatypes.constants import INT_DATATYPE_NAME
 from ast import Attribute, Name, Load, Expr, Call
 
 class Int(Base):
@@ -45,6 +46,6 @@ class Int(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'Int'
+        assert data['type'] == INT_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return Int(name)

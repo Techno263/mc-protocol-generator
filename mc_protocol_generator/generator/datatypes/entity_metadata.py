@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Call, Attribute, Name, Load, Expr
+from mc_protocol_generator.generator.datatypes.constants import ENTITY_METADATA_DATATYPE_NAME
 
 class EntityMetadata(Base):
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
@@ -59,6 +60,6 @@ class EntityMetadata(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'EntityMetadata'
+        assert data['type'] == ENTITY_METADATA_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return EntityMetadata(name)

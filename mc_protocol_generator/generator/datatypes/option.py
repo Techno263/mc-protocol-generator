@@ -1,6 +1,9 @@
 from .base import Base
-from ast import (IfExp, Compare, Attribute, Name, Load, Eq, Constant, Assign, Store,
-    NotEq, Expr, Call, If)
+from ast import (
+    IfExp, Compare, Attribute, Name, Load, Eq, Constant,
+    Assign, Store, NotEq, Expr, Call, If, BinOp, Add
+)
+from mc_protocol_generator.generator.datatypes.constants import OPTION_DATATYPE_NAME
 
 def validate(option):
     from .datatype import all_types, switch_types, option_types
@@ -61,23 +64,31 @@ class Option(Base):
             )
         else:
             node = node_override
-        return IfExp(
-            test=Compare(
-                left=node,
-                ops=[Eq()],
-                comparators=[
-                    Constant(
-                        value=None
-                    )
-                ]
+        return BinOp(
+            left=Attribute(
+                value=Name(id=sizer_name, ctx=Load()),
+                attr='bool_size',
+                ctx=Load()
             ),
-            body=Constant(
-                value=0
-            ),
-            orelse=self.optional_type.get_len_node(
-                sizer_name,
-                object_override=object_override,
-                node_override=node_override
+            op=Add(),
+            right=IfExp(
+                test=Compare(
+                    left=node,
+                    ops=[Eq()],
+                    comparators=[
+                        Constant(
+                            value=None
+                        )
+                    ]
+                ),
+                body=Constant(
+                    value=0
+                ),
+                orelse=self.optional_type.get_len_node(
+                    sizer_name,
+                    object_override=object_override,
+                    node_override=node_override
+                )
             )
         )
 
@@ -131,7 +142,7 @@ class Option(Base):
     @staticmethod
     def from_protocol_data(data):
         from ..packet import parse_field
-        assert data['type'] == 'Option'
+        assert data['type'] == OPTION_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         optional_type = parse_field(data['options']['optional'])
         optional_type.name = name

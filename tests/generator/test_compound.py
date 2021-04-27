@@ -14,91 +14,91 @@ class TestCompound(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Basic Compound',
-                    'type': 'Compound',
+                    'type': 'compound',
                     'options': {
                         'fields': [
                             {
                                 'name': 'Angle Value',
-                                'type': 'Angle'
+                                'type': 'angle'
                             },
                             {
                                 'name': 'Bool Value',
-                                'type': 'Bool'
+                                'type': 'bool'
                             },
                             {
                                 'name': 'Byte Value',
-                                'type': 'Byte'
+                                'type': 'byte'
                             },
                             {
                                 'name': 'Chat Value',
-                                'type': 'Chat'
+                                'type': 'chat'
                             },
                             {
                                 'name': 'Double Value',
-                                'type': 'Double'
+                                'type': 'double'
                             },
                             {
                                 'name': 'Entity Metadata Value',
-                                'type': 'EntityMetadata'
+                                'type': 'entitymetadata'
                             },
                             {
                                 'name': 'Float Value',
-                                'type': 'Float'
+                                'type': 'float'
                             },
                             {
                                 'name': 'Identifier Value',
-                                'type': 'Identifier'
+                                'type': 'identifier'
                             },
                             {
                                 'name': 'Int Value',
-                                'type': 'Int'
+                                'type': 'int'
                             },
                             {
                                 'name': 'Long Value',
-                                'type': 'Long'
+                                'type': 'long'
                             },
                             {
                                 'name': 'NBT Value',
-                                'type': 'NBT'
+                                'type': 'nbt'
                             },
                             {
                                 'name': 'Position Value',
-                                'type': 'Position'
+                                'type': 'position'
                             },
                             {
                                 'name': 'Short Value',
-                                'type': 'Short'
+                                'type': 'short'
                             },
                             {
                                 'name': 'Slot Value',
-                                'type': 'Slot'
+                                'type': 'slot'
                             },
                             {
                                 'name': 'String Value',
-                                'type': 'String',
+                                'type': 'string',
                                 'options': {
                                     'max_length': 255
                                 }
                             },
                             {
                                 'name': 'UByte Value',
-                                'type': 'UByte'
+                                'type': 'ubyte'
                             },
                             {
                                 'name': 'UShort Value',
-                                'type': 'UShort'
+                                'type': 'ushort'
                             },
                             {
                                 'name': 'UUID Value',
-                                'type': 'UUID'
+                                'type': 'uuid'
                             },
                             {
                                 'name': 'VarInt Value',
-                                'type': 'VarInt'
+                                'type': 'varint'
                             },
                             {
                                 'name': 'VarLong Value',
-                                'type': 'VarLong'
+                                'type': 'varlong'
                             }
                         ]
                     }
@@ -236,18 +236,18 @@ class BasicCompoundPacket:
             'fields': [
                 {
                     'name': 'Compound',
-                    'type': 'Compound',
+                    'type': 'compound',
                     'options': {
                         'fields': [
                             {
                                 'name': 'Array',
-                                'type': 'Array',
+                                'type': 'array',
                                 'options': {
                                     'count': {
-                                        'type': 'VarInt'
+                                        'type': 'varint'
                                     },
                                     'element': {
-                                        'type': 'String'
+                                        'type': 'string'
                                     }
                                 }
                             }
@@ -326,17 +326,17 @@ class CompoundWithArrayPacket:
             'fields': [
                 {
                     'name': 'Compound',
-                    'type': 'Compound',
+                    'type': 'compound',
                     'options': {
                         'fields': [
                             {
                                 'name': 'Nested Compound',
-                                'type': 'Compound',
+                                'type': 'compound',
                                 'options': {
                                     'fields': [
                                         {
                                             'name': 'Num',
-                                            'type': 'Int'
+                                            'type': 'int'
                                         }
                                     ]
                                 }
@@ -429,15 +429,15 @@ class CompoundWithCompoundPacket:
             'fields': [
                 {
                     'name': 'Compound',
-                    'type': 'Compound',
+                    'type': 'compound',
                     'options': {
                         'fields': [
                             {
                                 'name': 'Int Option',
-                                'type': 'Option',
+                                'type': 'option',
                                 'options': {
                                     'optional': {
-                                        'type': 'Int'
+                                        'type': 'int'
                                     }
                                 }
                             }
@@ -452,7 +452,10 @@ class Compound:
         self.int_option = int_option
 
     def __len__(self):
-        return 0 if self.int_option == None else dl.int_size
+        return (
+            dl.bool_size
+            + (0 if self.int_option == None else dl.int_size)
+        )
     
     def __repr__(self):
         return f'Compound(int_option={repr(self.int_option)})'
@@ -515,15 +518,15 @@ class CompoundWithOptionPacket:
             'fields': [
                 {
                     'name': 'Compound',
-                    'type': 'Compound',
+                    'type': 'compound',
                     'options': {
                         'fields': [
                             {
                                 'name': 'Switch Value',
-                                'type': 'VarInt'
+                                'type': 'varint'
                             },
                             {
-                                'type': 'Switch',
+                                'type': 'switch',
                                 'options': {
                                     'switch': {
                                         'field': 'Switch Value'
@@ -534,11 +537,11 @@ class CompoundWithOptionPacket:
                                             'fields': [
                                                 {
                                                     'name': 'Field1',
-                                                    'type': 'String'
+                                                    'type': 'string'
                                                 },
                                                 {
                                                     'name': 'Field2',
-                                                    'type': 'Int'
+                                                    'type': 'int'
                                                 }
                                             ]
                                         },
@@ -547,7 +550,7 @@ class CompoundWithOptionPacket:
                                             'fields': [
                                                 {
                                                     'name': 'Field1',
-                                                    'type': 'String'
+                                                    'type': 'string'
                                                 }
                                             ]
                                         },
@@ -556,7 +559,7 @@ class CompoundWithOptionPacket:
                                             'fields': [
                                                 {
                                                     'name': 'Field2',
-                                                    'type': 'Int'
+                                                    'type': 'int'
                                                 }
                                             ]
                                         }

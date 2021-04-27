@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Call, Attribute, Name, Load, Expr
+from mc_protocol_generator.generator.datatypes.constants import NBT_DATATYPE_NAME
 
 class NBT(Base):
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
@@ -65,6 +66,6 @@ class NBT(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'NBT'
+        assert data['type'] == NBT_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return NBT(name)

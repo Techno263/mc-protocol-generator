@@ -14,14 +14,14 @@ class TestPacket(unittest.TestCase):
             'fields': [
                 {
                     'name': 'UUID',
-                    'type': 'UUID'
+                    'type': 'uuid'
                 },
                 {
                     'name': 'Action',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
-                    'type': 'Switch',
+                    'type': 'switch',
                     'options': {
                         'switch': {
                             'field': 'Action'
@@ -32,23 +32,23 @@ class TestPacket(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Title',
-                                        'type': 'Chat'
+                                        'type': 'chat'
                                     },
                                     {
                                         'name': 'Health',
-                                        'type': 'Float'
+                                        'type': 'float'
                                     },
                                     {
                                         'name': 'Color',
-                                        'type': 'VarInt'
+                                        'type': 'varint'
                                     },
                                     {
                                         'name': 'Division',
-                                        'type': 'VarInt'
+                                        'type': 'varint'
                                     },
                                     {
                                         'name': 'Flags',
-                                        'type': 'UByte'
+                                        'type': 'ubyte'
                                     }
                                 ]
                             },
@@ -61,7 +61,7 @@ class TestPacket(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Health',
-                                        'type': 'Float'
+                                        'type': 'float'
                                     }
                                 ]
                             },
@@ -70,7 +70,7 @@ class TestPacket(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Title',
-                                        'type': 'Chat'
+                                        'type': 'chat'
                                     }
                                 ]
                             },
@@ -79,11 +79,11 @@ class TestPacket(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Color',
-                                        'type': 'VarInt'
+                                        'type': 'varint'
                                     },
                                     {
                                         'name': 'Division',
-                                        'type': 'VarInt'
+                                        'type': 'varint'
                                     }
                                 ]
                             },
@@ -92,7 +92,7 @@ class TestPacket(unittest.TestCase):
                                 'fields': [
                                     {
                                         'name': 'Flags',
-                                        'type': 'UByte'
+                                        'type': 'ubyte'
                                     }
                                 ]
                             }

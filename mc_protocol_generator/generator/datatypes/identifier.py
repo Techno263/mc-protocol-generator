@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Call, Attribute, Name, Load, Expr
+from mc_protocol_generator.generator.datatypes.constants import IDENTIFIER_DATATYPE_NAME
 
 class Identifier(Base):
     @property
@@ -63,6 +64,6 @@ class Identifier(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'Identifier'
+        assert data['type'] == IDENTIFIER_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return Identifier(name)

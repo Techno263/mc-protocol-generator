@@ -16,56 +16,67 @@ from mc_protocol_generator.generator.constants import (
     PACKET_CLASS_NAME_VAR, PACKET_CLASS_ID_VAR,
     PACKET_CLASS_STATE_VAR, PACKET_CLASS_BOUND_TO_VAR
 )
+from mc_protocol_generator.generator.datatypes.constants import (
+    ANGLE_DATATYPE_NAME, ARRAY_DATATYPE_NAME, BOOL_DATATYPE_NAME,
+    BYTE_DATATYPE_NAME, CHAT_DATATYPE_NAME, COMPOUND_DATATYPE_NAME,
+    DOUBLE_DATATYPE_NAME, ENTITY_METADATA_DATATYPE_NAME,
+    FLOAT_DATATYPE_NAME, IDENTIFIER_DATATYPE_NAME, INT_DATATYPE_NAME,
+    LONG_DATATYPE_NAME, NBT_DATATYPE_NAME, OPTION_DATATYPE_NAME,
+    POSITION_DATATYPE_NAME, SHORT_DATATYPE_NAME, SLOT_DATATYPE_NAME,
+    STRING_DATATYPE_NAME, SWITCH_DATATYPE_NAME, UBYTE_DATATYPE_NAME,
+    USHORT_DATATYPE_NAME, UUID_DATATYPE_NAME, VARINT_DATATYPE_NAME,
+    VARLONG_DATATYPE_NAME
+)
 
 def parse_field(field_data):
     data_type = field_data['type']
-    if data_type == 'Bool':
+    if data_type == BOOL_DATATYPE_NAME:
         return Bool.from_protocol_data(field_data)
-    elif data_type == 'Byte':
+    elif data_type == BYTE_DATATYPE_NAME:
         return Byte.from_protocol_data(field_data)
-    elif data_type == 'UByte':
+    elif data_type == UBYTE_DATATYPE_NAME:
         return UByte.from_protocol_data(field_data)
-    elif data_type == 'Short':
+    elif data_type == SHORT_DATATYPE_NAME:
         return Short.from_protocol_data(field_data)
-    elif data_type == 'UShort':
+    elif data_type == USHORT_DATATYPE_NAME:
         return UShort.from_protocol_data(field_data)
-    elif data_type == 'Int':
+    elif data_type == INT_DATATYPE_NAME:
         return Int.from_protocol_data(field_data)
-    elif data_type == 'Long':
+    elif data_type == LONG_DATATYPE_NAME:
         return Long.from_protocol_data(field_data)
-    elif data_type == 'Float':
+    elif data_type == FLOAT_DATATYPE_NAME:
         return Float.from_protocol_data(field_data)
-    elif data_type == 'Double':
+    elif data_type == DOUBLE_DATATYPE_NAME:
         return Double.from_protocol_data(field_data)
-    elif data_type == 'String':
+    elif data_type == STRING_DATATYPE_NAME:
         return String.from_protocol_data(field_data)
-    elif data_type == 'Chat':
+    elif data_type == CHAT_DATATYPE_NAME:
         return Chat.from_protocol_data(field_data)
-    elif data_type == 'Identifier':
+    elif data_type == IDENTIFIER_DATATYPE_NAME:
         return Identifier.from_protocol_data(field_data)
-    elif data_type == 'VarInt':
+    elif data_type == VARINT_DATATYPE_NAME:
         return VarInt.from_protocol_data(field_data)
-    elif data_type == 'VarLong':
+    elif data_type == VARLONG_DATATYPE_NAME:
         return VarLong.from_protocol_data(field_data)
-    elif data_type == 'EntityMetadata':
+    elif data_type == ENTITY_METADATA_DATATYPE_NAME:
         return EntityMetadata.from_protocol_data(field_data)
-    elif data_type == 'Slot':
+    elif data_type == SLOT_DATATYPE_NAME:
         return Slot.from_protocol_data(field_data)
-    elif data_type == 'NBT':
+    elif data_type == NBT_DATATYPE_NAME:
         return NBT.from_protocol_data(field_data)
-    elif data_type == 'Position':
+    elif data_type == POSITION_DATATYPE_NAME:
         return Position.from_protocol_data(field_data)
-    elif data_type == 'Angle':
+    elif data_type == ANGLE_DATATYPE_NAME:
         return Angle.from_protocol_data(field_data)
-    elif data_type == 'UUID':
+    elif data_type == UUID_DATATYPE_NAME:
         return UUID.from_protocol_data(field_data)
-    elif data_type == 'Array':
+    elif data_type == ARRAY_DATATYPE_NAME:
         return Array.from_protocol_data(field_data)
-    elif data_type == 'Switch':
+    elif data_type == SWITCH_DATATYPE_NAME:
         return Switch.from_protocol_data(field_data)
-    elif data_type == 'Option':
+    elif data_type == OPTION_DATATYPE_NAME:
         return Option.from_protocol_data(field_data)
-    elif data_type == "Compound":
+    elif data_type == COMPOUND_DATATYPE_NAME:
         return Compound.from_protocol_data(field_data)
     elif data_type == None:
         return None

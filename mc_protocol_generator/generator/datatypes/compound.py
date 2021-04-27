@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_class_name
+from mc_protocol_generator.generator.datatypes.constants import COMPOUND_DATATYPE_NAME
 from ..code_generator_context import CodeGeneratorContext
 from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef, Assign,
                  Store, arguments, arg, BinOp, Add, Return, JoinedStr,
@@ -258,7 +259,7 @@ class Compound(Base):
     @staticmethod
     def from_protocol_data(data):
         from ..packet import parse_field
-        assert data['type'] == 'Compound'
+        assert data['type'] == COMPOUND_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         fields = [parse_field(field) for field in data['options']['fields']]
         return Compound(name, fields)

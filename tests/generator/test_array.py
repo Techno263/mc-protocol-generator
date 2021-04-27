@@ -14,13 +14,13 @@ class TestArray(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Int Array',
-                    'type': 'Array',
+                    'type': 'array',
                     'options': {
                         'count': {
-                            'type': 'VarInt'
+                            'type': 'varint'
                         },
                         'element': {
-                            'type': 'Int'
+                            'type': 'int'
                         }
                     }
                 }
@@ -77,13 +77,13 @@ class TestArray(unittest.TestCase):
             'fields': [
                 {
                     'name': 'String Array',
-                    'type': 'Array',
+                    'type': 'array',
                     'options': {
                         'count': {
-                            'type': 'VarInt'
+                            'type': 'varint'
                         },
                         'element': {
-                            'type': 'String'
+                            'type': 'string'
                         }
                     }
                 }
@@ -140,40 +140,40 @@ class TestArray(unittest.TestCase):
             'fields': [
                 {
                     'name': 'ID',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
                     'name': 'Start',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
                     'name': 'Length',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
                     'name': 'Matches',
-                    'type': 'Array',
+                    'type': 'array',
                     'options': {
                         'count': {
-                            'type': 'VarInt'
+                            'type': 'varint'
                         },
                         'element': {
-                            'type': 'Compound',
+                            'type': 'compound',
                             'options': {
                                 'fields': [
                                     {
                                         'name': 'Match',
-                                        'type': 'String',
+                                        'type': 'string',
                                         'options': {
                                             'max_length': 32767
                                         }
                                     },
                                     {
                                         'name': 'Tooltip',
-                                        'type': 'Option',
+                                        'type': 'option',
                                         'options': {
                                             'optional': {
-                                                'type': 'Chat'
+                                                'type': 'chat'
                                             }
                                         }
                                     }
@@ -192,7 +192,8 @@ class MatchesItem:
 
     def __len__(self):
         return dl.string_size(self.match) + (
-            0 if self.tooltip == None else dl.chat_size(self.tooltip)
+            dl.bool_size
+            + (0 if self.tooltip == None else dl.chat_size(self.tooltip))
         )
     
     def __repr__(self):
@@ -271,19 +272,19 @@ class TabCompleteClientbound:
             'fields': [
                 {
                     'name': 'Outer Array',
-                    'type': 'Array',
+                    'type': 'array',
                     'options': {
                         'count': {
-                            'type': 'Int'
+                            'type': 'int'
                         },
                         'element': {
-                            'type': 'Array',
+                            'type': 'array',
                             'options': {
                                 'count': {
-                                    'type': 'VarInt'
+                                    'type': 'varint'
                                 },
                                 'element': {
-                                    'type': 'String'
+                                    'type': 'string'
                                 }
                             }
                         }
@@ -348,16 +349,16 @@ class TabCompleteClientbound:
             'fields': [
                 {
                     'name': 'Outer Array',
-                    'type': 'Array',
+                    'type': 'array',
                     'options': {
                         'count': {
-                            'type': 'VarInt'
+                            'type': 'varint'
                         },
                         'element': {
-                            'type': 'Option',
+                            'type': 'option',
                             'options': {
                                 'optional': {
-                                    'type': 'VarInt'
+                                    'type': 'varint'
                                 }
                             }
                         }
@@ -380,7 +381,8 @@ class TabCompleteClientbound:
                         dl.varint_size(ArrayOptionPacket.packet_id) + (
                             dl.varint_size(len(self.outer_array))
                             + sum ((
-                                0 if item == None else dl.varint_size(item)
+                                dl.bool_size
+                                + (0 if item == None else dl.varint_size(item))
                                 for item in self.outer_array
                             ))
                         )

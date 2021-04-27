@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from mc_protocol_generator.generator.datatypes.constants import USHORT_DATATYPE_NAME
 from ast import Attribute, Name, Load, Expr, Call
 
 class UShort(Base):
@@ -45,6 +46,6 @@ class UShort(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'UShort'
+        assert data['type'] == USHORT_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return UShort(name)

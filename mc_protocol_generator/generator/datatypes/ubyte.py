@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Attribute, Name, Load, Expr, Call
+from mc_protocol_generator.generator.datatypes.constants import UBYTE_DATATYPE_NAME
 
 class UByte(Base):
     @property
@@ -44,6 +45,6 @@ class UByte(Base):
     
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'UByte'
+        assert data['type'] == UBYTE_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return UByte(name)

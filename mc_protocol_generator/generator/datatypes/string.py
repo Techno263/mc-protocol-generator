@@ -1,5 +1,6 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
+from mc_protocol_generator.generator.datatypes.constants import STRING_DATATYPE_NAME
 from ast import Call, Attribute, Name, Load, Expr
 
 class String(Base):
@@ -68,7 +69,7 @@ class String(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'String'
+        assert data['type'] == STRING_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         if 'options' in data:
             if 'max_length' in data['options']:

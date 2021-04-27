@@ -14,86 +14,86 @@ class TestBasic(unittest.TestCase):
             'fields': [
                 {
                     'name': 'Angle Value',
-                    'type': 'Angle'
+                    'type': 'angle'
                 },
                 {
                     'name': 'Bool Value',
-                    'type': 'Bool'
+                    'type': 'bool'
                 },
                 {
                     'name': 'Byte Value',
-                    'type': 'Byte'
+                    'type': 'byte'
                 },
                 {
                     'name': 'Chat Value',
-                    'type': 'Chat'
+                    'type': 'chat'
                 },
                 {
                     'name': 'Double Value',
-                    'type': 'Double'
+                    'type': 'double'
                 },
                 {
                     'name': 'Entity Metadata Value',
-                    'type': 'EntityMetadata'
+                    'type': 'entitymetadata'
                 },
                 {
                     'name': 'Float Value',
-                    'type': 'Float'
+                    'type': 'float'
                 },
                 {
                     'name': 'Identifier Value',
-                    'type': 'Identifier'
+                    'type': 'identifier'
                 },
                 {
                     'name': 'Int Value',
-                    'type': 'Int'
+                    'type': 'int'
                 },
                 {
                     'name': 'Long Value',
-                    'type': 'Long'
+                    'type': 'long'
                 },
                 {
                     'name': 'NBT Value',
-                    'type': 'NBT'
+                    'type': 'nbt'
                 },
                 {
                     'name': 'Position Value',
-                    'type': 'Position'
+                    'type': 'position'
                 },
                 {
                     'name': 'Short Value',
-                    'type': 'Short'
+                    'type': 'short'
                 },
                 {
                     'name': 'Slot Value',
-                    'type': 'Slot'
+                    'type': 'slot'
                 },
                 {
                     'name': 'String Value',
-                    'type': 'String',
+                    'type': 'string',
                     'options': {
                         'max_length': 255
                     }
                 },
                 {
                     'name': 'UByte Value',
-                    'type': 'UByte'
+                    'type': 'ubyte'
                 },
                 {
                     'name': 'UShort Value',
-                    'type': 'UShort'
+                    'type': 'ushort'
                 },
                 {
                     'name': 'UUID Value',
-                    'type': 'UUID'
+                    'type': 'uuid'
                 },
                 {
                     'name': 'VarInt Value',
-                    'type': 'VarInt'
+                    'type': 'varint'
                 },
                 {
                     'name': 'VarLong Value',
-                    'type': 'VarLong'
+                    'type': 'varlong'
                 }
             ]
         }

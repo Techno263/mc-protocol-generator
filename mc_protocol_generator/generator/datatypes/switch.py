@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from collections import namedtuple
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name
+from mc_protocol_generator.generator.datatypes.constants import SWITCH_DATATYPE_NAME
 
 Case = namedtuple('Case', ['value', 'fields'])
 
@@ -123,10 +124,11 @@ def validate(switch):
         raise Exception(f'Invalid field type, {field_type}')
 
 class Switch(Base):
-    def __init__(self, field, cases):
+    def __init__(self, field, cases, error_on_invalid_case):
         super().__init__(None)
         self.field = field
         self.cases = cases
+        self.error_on_invalid_case = error_on_invalid_case
         validate(self)
 
     @property
@@ -252,16 +254,6 @@ class Switch(Base):
                     orelse=case_node
                 )
         return case_node
-        '''
-        return BinOp(
-            left=self.switch_type.get_len_node(
-                sizer_name,
-                object_override=object_override
-            ),
-            op=Add(),
-            right=case_node
-        )
-        '''
 
     def get_repr_body_nodes(self):
         stateful_enumerate = StatefulEnumerator()
@@ -330,7 +322,7 @@ class Switch(Base):
     @staticmethod
     def from_protocol_data(data):
         from ..packet import parse_field
-        assert data['type'] == 'Switch'
+        assert data['type'] == SWITCH_DATATYPE_NAME
         field = data['options']['switch']['field']
         cases = [
             Case(
@@ -339,4 +331,8 @@ class Switch(Base):
             )
             for case in data['options']['cases']
         ]
-        return Switch(field, cases)
+        if 'error_on_invalid_case' in data:
+            error_on_invalid_case = data['error_on_invalid_case']
+        else:
+            error_on_invalid_case = False
+        return Switch(field, cases, error_on_invalid_case)

@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Attribute, Name, Load, Expr, Call
+from mc_protocol_generator.generator.datatypes.constants import SHORT_DATATYPE_NAME
 
 class Short(Base):
     @property
@@ -44,6 +45,6 @@ class Short(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'Short'
+        assert data['type'] == SHORT_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return Short(name)

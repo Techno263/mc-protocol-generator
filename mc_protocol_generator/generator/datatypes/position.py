@@ -1,5 +1,6 @@
 from .base import Base
 from ast import Attribute, Name, Load, Expr, Call
+from mc_protocol_generator.generator.datatypes.constants import POSITION_DATATYPE_NAME
 
 class Position(Base):
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
@@ -40,6 +41,6 @@ class Position(Base):
 
     @staticmethod
     def from_protocol_data(data):
-        assert data['type'] == 'Position'
+        assert data['type'] == POSITION_DATATYPE_NAME
         name = data['name'] if 'name' in data else None
         return Position(name)
