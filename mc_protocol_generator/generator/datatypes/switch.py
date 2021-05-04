@@ -8,51 +8,19 @@ from mc_protocol_generator.generator.datatypes.constants import SWITCH_DATATYPE_
 
 Case = namedtuple('Case', ['value', 'fields'])
 
-class StatefulIterator(Iterator):
-    def __init__(self, iterable, stateful_enumerator):
-        self.index = 0
-        self.iterator = iter(iterable)
-        self.stateful_enumerator = stateful_enumerator
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        next_value = next(self.iterator)
-        t_index = self.stateful_enumerator.index
-        self.stateful_enumerator.index += 1
-        return t_index, next_value
-
-class StatefulEnumerator:
-    def __init__(self, start=0):
-        self.start = start
-        self.index = start
-
-    def reset(self, start=None):
-        if start != None:
-            self.start = start
-        self.index = self.start
-
-    def __call__(self, iterable):
-        return StatefulIterator(iterable, self)
-
-
-class SetFilter:
-    def __init__(self, key, value, index=0):
-        self.key = key
+class OrderedSetItem:
+    def __init__(self, value, order):
         self.value = value
-        self.index = index
+        self.order = order
 
     def __repr__(self):
-        return f'SetFilter(key={repr(self.key)}, arg={repr(self.arg)}, index={repr(self.index)})'
+        return f'OrderedSetItem(value={repr(self.value)}, order={repr(self.order)})'
 
     def __hash__(self):
-        return hash(self.key)
+        return hash(self.value)
 
     def __eq__(self, other):
-        if hasattr(other, 'key'):
-            return other.key == self.key
-        return False
+        return self.value == other
 
 def get_fields_len_node(sizer_name, fields, obj):
     if len(fields) == 0:
@@ -81,7 +49,7 @@ def get_field_write_nodes(writer_name, fields):
         for node in field.get_write_nodes(writer_name)
     ]
 
-def get_cases_write_node(writer_name, cases, switch_value_node, ):
+def get_cases_write_nodes(writer_name, cases, switch_value_node):
     if len(cases) == 0:
         return []
     if_op = If(
@@ -101,6 +69,62 @@ def get_cases_write_node(writer_name, cases, switch_value_node, ):
                 comparators=[Constant(value=case.value)]
             ),
             body=get_field_write_nodes(writer_name, case.fields),
+            orelse=[if_op]
+        )
+    return [if_op]
+
+def get_field_read_nodes(reader_name, case, all_field_names):
+    case_fields = {
+        field.field_name
+        for field in case.fields
+    }
+    return [
+        node
+        for field in case.fields
+        for node in field.get_read_nodes(reader_name)
+    ] + [
+        Assign(
+            targets=[Name(id=field_name, ctx=Store())],
+            value=Constant(value=None)
+        )
+        for field_name in all_field_names
+        if field_name not in case_fields
+    ]
+
+def get_cases_read_nodes(reader_name, cases, switch_value_node):
+    if len(cases) == 0:
+        return []
+    all_field_names = [
+        item.value
+        for item in sorted(
+            {
+                OrderedSetItem(item, index)
+                for index, item in enumerate(
+                    field.field_name
+                    for case in cases
+                    for field in case.fields
+                )
+            },
+            key=lambda set_item: set_item.order
+        )
+    ]
+    if_op = If(
+        test=Compare(
+            left=switch_value_node,
+            ops=[Eq()],
+            comparators=[Constant(value=cases[-1].value)]
+        ),
+        body=get_field_read_nodes(reader_name, cases[-1], all_field_names),
+        orelse=[]
+    )
+    for case in cases[-2::-1]:
+        if_op = If(
+            test=Compare(
+                left=switch_value_node,
+                ops=[Eq()],
+                comparators=[Constant(value=case.value)]
+            ),
+            body=get_field_read_nodes(reader_name, case, all_field_names),
             orelse=[if_op]
         )
     return [if_op]
@@ -143,52 +167,41 @@ class Switch(Base):
             for field_name in field.get_field_name_set()
         }
 
-    def get_init_args(self):
-        stateful_enumerate = StatefulEnumerator()
-        opt_args = [
-            set_filter.value
-            for set_filter in sorted({
-                SetFilter(
-                    field.field_name,
-                    (arg(arg=field.field_name), Constant(value=None)),
-                    index
-                )
-                for case in self.cases
-                for index, field in stateful_enumerate(case.fields)
-            },
-            key=lambda x: x.index)
+    def get_ordered_field_names(self):
+        return [
+            item.value
+            for item in sorted(
+                {
+                    OrderedSetItem(item, index)
+                    for index, item in enumerate(
+                        field.field_name
+                        for case in self.cases
+                        for field in case.fields
+                    )
+                },
+                key=lambda set_item: set_item.order
+            )
         ]
-        return [], opt_args
+
+    def get_init_args(self):
+        return [
+            arg(arg=field_name)
+            for field_name in self.get_ordered_field_names()
+        ]
 
     def get_init_body_nodes(self):
-        stateful_enumerate = StatefulEnumerator()
         return [
             Assign(
                 targets=[
                     Attribute(
-                        value=Name(
-                            id='self',
-                            ctx=Load()
-                        ),
-                        attr=set_filter.value.field_name,
+                        value=Name('self', ctx=Load()),
+                        attr=field_name,
                         ctx=Store()
                     )
                 ],
-                value=Name(
-                    id=set_filter.value.field_name,
-                    ctx=Load()
-                )
+                value=Name(id=field_name, ctx=Load())
             )
-            for set_filter in sorted({
-                SetFilter(
-                    field.field_name,
-                    field,
-                    index
-                )
-                for case in self.cases
-                for index, field in stateful_enumerate(case.fields)
-            },
-            key=lambda x: x.index)
+            for field_name in self.get_ordered_field_names()
         ]
 
     def get_len_node(self, sizer_name, object_override=None, node_override=None):
@@ -256,40 +269,26 @@ class Switch(Base):
         return case_node
 
     def get_repr_body_nodes(self):
-        stateful_enumerate = StatefulEnumerator()
-        opt_args = [
-            set_filter.value
-            for set_filter in sorted({
-                SetFilter(
-                    field.field_name,
-                    [
-                        Constant(value=f'{field.field_name}='),
-                        FormattedValue(
-                            value=Call(
-                                func=Name(id='repr', ctx=Load()),
-                                args=[
-                                    Attribute(
-                                        value=Name(id='self', ctx=Load()),
-                                        attr=field.field_name,
-                                        ctx=Load()
-                                    )
-                                ],
-                                keywords=[]
-                            ),
-                            conversion=-1
-                        )
-                    ],
-                    index
+        return [
+            [
+                Constant(value=f'{field_name}='),
+                FormattedValue(
+                    value=Call(
+                        func=Name(id='repr', ctx=Load()),
+                        args=[
+                            Attribute(
+                                value=Name(id='self', ctx=Load()),
+                                attr=field_name,
+                                ctx=Load()
+                            )
+                        ],
+                        keywords=[]
+                    ),
+                    conversion=-1
                 )
-                for case in self.cases
-                for index, field in stateful_enumerate(case.fields)
-            },
-            key=lambda x: x.index)
+            ]
+            for field_name in self.get_ordered_field_names()
         ]
-        nodes = [None, [Constant(value=', ')]] * (len(opt_args) - 1) + [None]
-        nodes[0::2] = opt_args
-        nodes = [node for node_list in nodes for node in node_list]
-        return [nodes]
 
     def get_write_nodes(self, writer_name, node_override=None):
         if node_override == None:
@@ -300,15 +299,21 @@ class Switch(Base):
             )
         else:
             node = node_override
-        return get_cases_write_node(
+        return get_cases_write_nodes(
             writer_name,
             self.cases,
             node
         )
-        
 
-    def get_read_node(self, reader_name):
-        pass
+    def get_read_nodes(self, reader_name, do_assign=True):
+        switch_value_node = Name(id=self.switch_field_name, ctx=Load())
+        if do_assign:
+            return get_cases_read_nodes(
+                reader_name,
+                self.cases,
+                switch_value_node
+            )
+        raise Exception('Cannot get read nodes for switch type without assign')
 
     def get_module_body_nodes(self):
         return [

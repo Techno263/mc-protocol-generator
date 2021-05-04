@@ -131,8 +131,28 @@ class Option(Base):
             )
         ]
 
-    def get_read_node(self, reader_name):
-        pass
+    def get_read_nodes(self, reader_name, do_assign=True):
+        value_op = IfExp(
+            test=Call(
+                func=Attribute(
+                    value=Name(id=reader_name, ctx=Load()),
+                    attr='read_bool',
+                    ctx=Load()
+                ),
+                args=[],
+                keywords=[]
+            ),
+            body=self.optional_type.get_read_nodes(reader_name, False),
+            orelse=Constant(value=None)
+        )
+        if do_assign:
+            return [
+                Assign(
+                    targets=[Name(id=self.field_name, ctx=Store())],
+                    value=value_op
+                )
+            ]
+        return value_op
 
     def get_module_body_nodes(self):
         nodes = self.optional_type.get_module_body_nodes()

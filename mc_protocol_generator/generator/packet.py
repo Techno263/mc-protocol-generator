@@ -1,7 +1,8 @@
 from ast import (
     Module, ClassDef, Assign, Name, Store, Constant,
     FunctionDef, arguments, arg, Attribute, Load, Return, BinOp, Add,
-    JoinedStr, Expr, Call, unparse, fix_missing_locations, Pass
+    JoinedStr, Expr, Call, unparse, fix_missing_locations, Pass,
+    keyword
 )
 from mc_protocol_generator.generator.util import format_class_name
 from black import Mode, format_str
@@ -136,30 +137,20 @@ class Packet:
         return format_class_name(self.name)
 
     def get_init_args(self):
-        # get args and optional args from fields
-        args, opt_args = zip(*[field.get_init_args() for field in self.fields])
-        # concatenate all arg lists into one list
-        args = [arg for arg_list in args for arg in arg_list]
-        # split optional arg variables and their default values into their own lists
-        opt_args = tuple(
-            map(
-                list,
-                zip(*[opt_arg for opt_arg_list in opt_args for opt_arg in opt_arg_list])
-            )
-        )
-        # if there are no optional args, opt_args will be an empty tuple
-        # check if there is an opt_args list and defaults list
-        # if not make a tuple with two empty lists
-        opt_args, defaults = opt_args if len(opt_args) == 2 else ([], [])
-        args = [arg(arg='self', annotation=None, type_comment=None)] + args + opt_args
         return arguments(
             posonlyargs=[],
-            args=args,
+            args=[
+                arg(arg='self', annotation=None, type_comment=None)
+            ] + [
+                arg
+                for field in self.fields
+                for arg in field.get_init_args()
+            ],
             vararg=None,
             kwonlyargs=[],
             kw_defaults=[],
             kwarg=None,
-            defaults=defaults
+            defaults=[]
         )
 
     def get_init_body_nodes(self):
@@ -197,18 +188,16 @@ class Packet:
 
     def get_repr_body_nodes(self):
         field_nodes = [
-            nodes
-            for nodes_list in zip(
-                *[
-                    field.get_repr_body_nodes()
-                    for field in self.fields
-                ]
-            )
-            for nodes in nodes_list
-            if len(nodes) > 0
+            field_repr_node_list
+            for field in self.fields
+            for field_repr_node_list in field.get_repr_body_nodes()
         ]
-        nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
-        nodes[0::2] = field_nodes
+        repr_nodes = (
+            [None, [Constant(value=', ')]]
+            * (len(field_nodes) - 1)
+            + [None]
+        )
+        repr_nodes[::2] = field_nodes
         return [
             Return(
                 value=JoinedStr(
@@ -216,28 +205,10 @@ class Packet:
                         Constant(value=self.class_name + '(')
                     ] + [
                         node
-                        for node_list in nodes
+                        for node_list in repr_nodes
                         for node in node_list
                     ] + [
                         Constant(value=')')
-                    ]
-                )
-            )
-        ]
-
-    def get_repr_body_nodes_old(self):
-        def get_prefix(index):
-            if index == 0:
-                return self.class_name + '('
-            return ', '
-        return [
-            Return(
-                value=JoinedStr(
-                    values=[
-                        node
-                        for index, field in enumerate(self.fields)
-                        for nodes in field.get_repr_body_nodes(get_prefix(index))
-                        for node in nodes
                     ]
                 )
             )
@@ -269,18 +240,18 @@ class Packet:
         ]
 
     def get_read_packet_body_nodes(self, reader_name):
-        from ast import Pass
-        return [Pass()]
         return [
-            field.get_read_node(reader_name)
+            node
             for field in self.fields
+            for node in field.get_read_nodes(reader_name)
         ] + [
             Return(
                 value=Call(
                     func=Name(id=self.class_name, ctx=Load()),
                     args=[
-                        Name(id=field.field_name, ctx=Load())
+                        arg
                         for field in self.fields
+                        for arg in field.get_init_args()
                     ],
                     keywords=[]
                 )
@@ -461,7 +432,7 @@ class Packet:
     def get_packet_code(self):
         black_mode = Mode(
             target_versions=set(),
-            line_length=88,
+            line_length=79,
             is_pyi=False,
             string_normalization=False,
             experimental_string_processing=False

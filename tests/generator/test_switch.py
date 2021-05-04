@@ -69,8 +69,7 @@ class SwitchPacket:
     packet_state = 'play'
     packet_bound_to = 'server'
 
-    def __init__(self, switch_value, field5, field1=None, field2=None, field3=None,
-                 field4=None):
+    def __init__(self, switch_value, field1, field2, field3, field4, field5):
         self.switch_value = switch_value
         self.field1 = field1
         self.field2 = field2
@@ -107,7 +106,26 @@ class SwitchPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        switch_value = reader.read_varint()
+        if switch_value == 0:
+            field1 = reader.read_varint()
+            field2 = reader.read_ubyte()
+            field3 = reader.read_short()
+            field4 = None
+        elif switch_value == 1:
+            field4 = reader.read_string()
+            field1 = None
+            field2 = None
+            field3 = None
+        elif switch_value == 2:
+            field1 = None
+            field2 = None
+            field3 = None
+            field4 = None
+        field5 = reader.read_varint()
+        return SwitchPacket(
+            switch_value, field1, field2, field3, field4, field5
+        )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Switch Packet', packet.name)
@@ -115,7 +133,6 @@ class SwitchPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -206,8 +223,7 @@ class SwitchPacket:
     packet_state = 'play'
     packet_bound_to = 'server'
 
-    def __init__(self, switch_value, array1=None, array2=None, field1=None,
-                 array3=None):
+    def __init__(self, switch_value, array1, array2, field1, array3):
         self.switch_value = switch_value
         self.array1 = array1
         self.array2 = array2
@@ -255,7 +271,23 @@ class SwitchPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        switch_value = reader.read_varint()
+        if switch_value == 0:
+            array1 = [reader.read_string() for _ in range(reader.read_varint())]
+            array2 = [reader.read_short() for _ in range(reader.read_int())]
+            field1 = reader.read_short()
+            array3 = None
+        elif switch_value == 1:
+            array3 = [reader.read_chat() for _ in range(reader.read_ushort())]
+            array1 = None
+            array2 = None
+            field1 = None
+        elif switch_value == 2:
+            array1 = None
+            array2 = None
+            field1 = None
+            array3 = None
+        return SwitchPacket(switch_value, array1, array2, field1, array3)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Switch Packet', packet.name)
@@ -263,7 +295,6 @@ class SwitchPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -377,7 +408,9 @@ class Field1:
 
     @staticmethod
     def read_data(reader):
-        pass
+        field1 = reader.read_int()
+        field2 = reader.read_string()
+        return Field1(field1, field2)
 
 class Field2:
     def __init__(self, field1, field2):
@@ -396,7 +429,9 @@ class Field2:
 
     @staticmethod
     def read_data(reader):
-        pass
+        field1 = reader.read_int()
+        field2 = reader.read_string()
+        return Field2(field1, field2)
 
 class Field4:
     def __init__(self, field1, field2):
@@ -415,7 +450,9 @@ class Field4:
 
     @staticmethod
     def read_data(reader):
-        pass
+        field1 = reader.read_int()
+        field2 = reader.read_string()
+        return Field4(field1, field2)
 
 class SwitchPacket:
     packet_name = 'Switch Packet'
@@ -423,8 +460,7 @@ class SwitchPacket:
     packet_state = 'play'
     packet_bound_to = 'server'
 
-    def __init__(self, switch_value, field1=None, field2=None, field3=None,
-                 field4=None):
+    def __init__(self, switch_value, field1, field2, field3, field4):
         self.switch_value = switch_value
         self.field1 = field1
         self.field2 = field2
@@ -462,7 +498,23 @@ class SwitchPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        switch_value = reader.read_varint()
+        if switch_value == 0:
+            field1 = Field1.read_data(reader)
+            field2 = Field2.read_data(reader)
+            field3 = reader.read_short()
+            field4 = None
+        elif switch_value == 1:
+            field4 = Field4.read_data(reader)
+            field1 = None
+            field2 = None
+            field3 = None
+        elif switch_value == 2:
+            field1 = None
+            field2 = None
+            field3 = None
+            field4 = None
+        return SwitchPacket(switch_value, field1, field2, field3, field4)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Switch Packet', packet.name)
@@ -470,7 +522,6 @@ class SwitchPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -557,8 +608,7 @@ class SwitchPacket:
     packet_state = 'play'
     packet_bound_to = 'server'
 
-    def __init__(self, switch_value, field1=None, field2=None, field3=None,
-                 field4=None):
+    def __init__(self, switch_value, field1, field2, field3, field4):
         self.switch_value = switch_value
         self.field1 = field1
         self.field2 = field2
@@ -617,7 +667,23 @@ class SwitchPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        switch_value = reader.read_varint()
+        if switch_value == 0:
+            field1 = reader.read_varint() if reader.read_bool() else None
+            field2 = reader.read_ubyte() if reader.read_bool() else None
+            field3 = reader.read_short() if reader.read_bool() else None
+            field4 = None
+        elif switch_value == 1:
+            field4 = reader.read_string() if reader.read_bool() else None
+            field1 = None
+            field2 = None
+            field3 = None
+        elif switch_value == 2:
+            field1 = None
+            field2 = None
+            field3 = None
+            field4 = None
+        return SwitchPacket(switch_value, field1, field2, field3, field4)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Switch Packet', packet.name)
@@ -625,7 +691,6 @@ class SwitchPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),

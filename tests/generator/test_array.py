@@ -53,7 +53,8 @@ class TestArray(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    int_array = [reader.read_int() for _ in range(reader.read_varint())]
+                    return IntArrayPacket(int_array)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Int Array Packet', packet.name)
@@ -61,7 +62,6 @@ class TestArray(unittest.TestCase):
         self.assertEqual('handshaking', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -116,7 +116,13 @@ class TestArray(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    string_array = [
+                        reader.read_string()
+                        for _ in range(reader.read_varint())
+                    ]
+                    return StringArrayPacket(
+                        string_array
+                    )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('String Array Packet', packet.name)
@@ -124,7 +130,6 @@ class TestArray(unittest.TestCase):
         self.assertEqual('login', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -208,7 +213,12 @@ class MatchesItem:
 
     @staticmethod
     def read_data(reader):
-        pass
+        match = reader.read_string()
+        tooltip = reader.read_chat() if reader.read_bool() else None
+        return MatchesItem(
+            match,
+            tooltip
+        )
 
 class TabCompleteClientbound:
     packet_name = 'Tab-Complete (clientbound)'
@@ -248,7 +258,19 @@ class TabCompleteClientbound:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        id = reader.read_varint()
+        start = reader.read_varint()
+        length = reader.read_varint()
+        matches = [
+            MatchesItem.read_data(reader)
+            for _ in range(reader.read_varint())
+        ]
+        return TabCompleteClientbound(
+            id,
+            start,
+            length,
+            matches
+        )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Tab-Complete (clientbound)', packet.name)
@@ -256,7 +278,6 @@ class TabCompleteClientbound:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -325,7 +346,16 @@ class TabCompleteClientbound:
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    outer_array = [
+                        [
+                            reader.read_string()
+                            for _ in range(reader.read_varint())
+                        ]
+                        for _ in range(reader.read_int())
+                    ]
+                    return ArrayArrayPacket(
+                        outer_array
+                    )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Array Array Packet', packet.name)
@@ -333,7 +363,6 @@ class TabCompleteClientbound:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -402,7 +431,13 @@ class TabCompleteClientbound:
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    outer_array = [
+                        reader.read_varint() if reader.read_bool() else None
+                        for _ in range(reader.read_varint())
+                    ]
+                    return ArrayOptionPacket(
+                        outer_array
+                    )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Array Option Packet', packet.name)
@@ -410,7 +445,6 @@ class TabCompleteClientbound:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),

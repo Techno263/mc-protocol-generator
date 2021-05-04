@@ -1,7 +1,7 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_field_name, replace_string
 from mc_protocol_generator.generator.datatypes.constants import STRING_DATATYPE_NAME
-from ast import Call, Attribute, Name, Load, Expr
+from ast import Call, Attribute, Name, Load, Expr, Assign, Store
 
 class String(Base):
     @property
@@ -64,8 +64,24 @@ class String(Base):
             )
         ]
 
-    def get_read_node(self, reader_name):
-        pass
+    def get_read_nodes(self, reader_name, do_assign=True):
+        value_op = Call(
+            func=Attribute(
+                value=Name(id=reader_name, ctx=Load()),
+                attr='read_string',
+                ctx=Load()
+            ),
+            args=[],
+            keywords=[]
+        )
+        if do_assign:
+            return [
+                Assign(
+                    targets=[Name(id=self.field_name, ctx=Store())],
+                    value=value_op
+                )
+            ]
+        return value_op
 
     @staticmethod
     def from_protocol_data(data):

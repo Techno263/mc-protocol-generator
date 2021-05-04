@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 from mc_protocol_generator.generator.util import format_field_name
-from ast import arg, Assign, Attribute, Name, Load, Store, Constant, FormattedValue, Call
+from ast import (
+    arg, Assign, Attribute, Name, Load, Store, Constant, FormattedValue, Call,
+    keyword
+)
 
 class Base(ABC):
     def __init__(self, name):
@@ -21,16 +24,7 @@ class Base(ABC):
         pass
 
     def get_init_args(self):
-        return (
-            [
-                arg(
-                    arg=self.field_name,
-                    annotation=None,
-                    type_comment=None
-                )
-            ],
-            []
-        )
+        return [arg(arg=self.field_name)]
 
     def get_init_body_nodes(self):
         return [
@@ -75,16 +69,15 @@ class Base(ABC):
                     ),
                     conversion=-1
                 )
-            ],
-            []
+            ]
         ]
 
     @abstractmethod
-    def get_write_nodes(self, writer_name):
+    def get_write_nodes(self, writer_name, node_override=None):
         pass
 
     @abstractmethod
-    def get_read_node(self, reader_name):
+    def get_read_nodes(self, reader_name):
         pass
 
     def get_module_body_nodes(self):

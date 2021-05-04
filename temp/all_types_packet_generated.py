@@ -50,14 +50,14 @@ class AllTypesPacket:
         slot,
         string,
         switch_value,
+        switch_short,
+        switch_long,
+        switch_int,
         ubyte,
         ushort,
         uuid,
         varint,
         varlong,
-        switch_short=None,
-        switch_long=None,
-        switch_int=None,
     ):
         self.angle = angle
         self.array = array
@@ -187,9 +187,13 @@ class AllTypesPacket:
         string = reader.read_string()
         switch_value = reader.read_varint()
         if switch_value == 0:
-            _switch_values = {'switch_short': reader.read_short()}
+            switch_short = reader.read_short()
+            switch_long = None
+            switch_int = None
         elif switch_value == 1:
-            _switch_values = {'switch_long': reader.read_long(), 'switch_int': reader.read_int()}
+            switch_short = None
+            switch_long = reader.read_long()
+            switch_int = reader.read_int()
         ubyte = reader.read_ubyte()
         ushort = reader.read_ushort()
         uuid = reader.read_uuid()
@@ -215,10 +219,12 @@ class AllTypesPacket:
             slot=slot,
             string=string,
             switch_value=switch_value,
+            switch_short=switch_short,
+            switch_long=switch_long,
+            switch_int=switch_int,
             ubyte=ubyte,
             ushort=ushort,
             uuid=uuid,
             varint=varint,
             varlong=varlong,
-            **_switch_values,
         )

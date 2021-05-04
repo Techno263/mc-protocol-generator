@@ -1,5 +1,5 @@
 from .base import Base
-from ast import Call, Attribute, Name, Load, Expr
+from ast import Call, Attribute, Name, Load, Expr, Assign, Store
 from mc_protocol_generator.generator.datatypes.constants import ENTITY_METADATA_DATATYPE_NAME
 
 class EntityMetadata(Base):
@@ -55,8 +55,24 @@ class EntityMetadata(Base):
             )
         ]
 
-    def get_read_node(self, reader_name):
-        pass
+    def get_read_nodes(self, reader_name, do_assign=True):
+        value_op = Call(
+            func=Attribute(
+                value=Name(id=reader_name, ctx=Load()),
+                attr='read_entity_metadata',
+                ctx=Load()
+            ),
+            args=[],
+            keywords=[]
+        )
+        if do_assign:
+            return [
+                Assign(
+                    targets=[Name(id=self.field_name, ctx=Store())],
+                    value=value_op
+                )
+            ]
+        return value_op
 
     @staticmethod
     def from_protocol_data(data):

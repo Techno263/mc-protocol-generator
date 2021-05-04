@@ -186,7 +186,48 @@ class BasicCompound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        angle_value = reader.read_angle()
+        bool_value = reader.read_bool()
+        byte_value = reader.read_byte()
+        chat_value = reader.read_chat()
+        double_value = reader.read_double()
+        entity_metadata_value = reader.read_entity_metadata()
+        float_value = reader.read_float()
+        identifier_value = reader.read_identifier()
+        int_value = reader.read_int()
+        long_value = reader.read_long()
+        nbt_value = reader.read_nbt()
+        position_value = reader.read_position()
+        short_value = reader.read_short()
+        slot_value = reader.read_slot()
+        string_value = reader.read_string()
+        ubyte_value = reader.read_ubyte()
+        ushort_value = reader.read_ushort()
+        uuid_value = reader.read_uuid()
+        varint_value = reader.read_varint()
+        varlong_value = reader.read_varlong()
+        return BasicCompound(
+            angle_value,
+            bool_value,
+            byte_value,
+            chat_value,
+            double_value,
+            entity_metadata_value,
+            float_value,
+            identifier_value,
+            int_value,
+            long_value,
+            nbt_value,
+            position_value,
+            short_value,
+            slot_value,
+            string_value,
+            ubyte_value,
+            ushort_value,
+            uuid_value,
+            varint_value,
+            varlong_value
+        )
 
 class BasicCompoundPacket:
     packet_name = 'Basic Compound Packet'
@@ -212,7 +253,10 @@ class BasicCompoundPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        basic_compound = BasicCompound.read_data(reader)
+        return BasicCompoundPacket(
+            basic_compound
+        )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Basic Compound Packet', packet.name)
@@ -220,7 +264,6 @@ class BasicCompoundPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -276,7 +319,11 @@ class Compound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        array = [
+            reader.read_string()
+            for _ in range(reader.read_varint())
+        ]
+        return Compound(array)
 
 class CompoundWithArrayPacket:
     packet_name = 'Compound with Array Packet'
@@ -302,7 +349,8 @@ class CompoundWithArrayPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        compound = Compound.read_data(reader)
+        return CompoundWithArrayPacket(compound)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Compound with Array Packet', packet.name)
@@ -310,7 +358,6 @@ class CompoundWithArrayPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -362,7 +409,8 @@ class NestedCompound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        num = reader.read_int()
+        return NestedCompound(num)
 
 class Compound:
     def __init__(self, nested_compound):
@@ -379,7 +427,8 @@ class Compound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        nested_compound = NestedCompound.read_data(reader)
+        return Compound(nested_compound)
 
 class CompoundWithCompoundPacket:
     packet_name = 'Compound with Compound Packet'
@@ -405,7 +454,8 @@ class CompoundWithCompoundPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        compound = Compound.read_data(reader)
+        return CompoundWithCompoundPacket(compound)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Compound with Compound Packet', packet.name)
@@ -413,7 +463,6 @@ class CompoundWithCompoundPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -468,7 +517,8 @@ class Compound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        int_option = reader.read_int() if reader.read_bool() else None
+        return Compound(int_option)
 
 class CompoundWithOptionPacket:
     packet_name = 'Compound with Option Packet'
@@ -494,7 +544,8 @@ class CompoundWithOptionPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        compound = Compound.read_data(reader)
+        return CompoundWithOptionPacket(compound)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Compound with Option Packet', packet.name)
@@ -502,7 +553,6 @@ class CompoundWithOptionPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -573,7 +623,7 @@ class CompoundWithOptionPacket:
         }
         packet_src_code = '''
 class Compound:
-    def __init__(self, switch_value, field1=None, field2=None):
+    def __init__(self, switch_value, field1, field2):
         self.switch_value = switch_value
         self.field1 = field1
         self.field2 = field2
@@ -607,7 +657,17 @@ class Compound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        switch_value = reader.read_varint()
+        if switch_value == 0:
+            field1 = reader.read_string()
+            field2 = reader.read_int()
+        elif switch_value == 1:
+            field1 = reader.read_string()
+            field2 = None
+        elif switch_value == 2:
+            field2 = reader.read_int()
+            field1 = None
+        return Compound(switch_value, field1, field2)
 
 class CompoundWithSwitchPacket:
     packet_name = 'Compound with Switch Packet'
@@ -633,7 +693,8 @@ class CompoundWithSwitchPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        compound = Compound.read_data(reader)
+        return CompoundWithSwitchPacket(compound)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Compound with Switch Packet', packet.name)
@@ -641,7 +702,6 @@ class CompoundWithSwitchPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),

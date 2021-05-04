@@ -1,14 +1,15 @@
 from .base import Base
 from mc_protocol_generator.generator.util import format_class_name
 from mc_protocol_generator.generator.datatypes.constants import COMPOUND_DATATYPE_NAME
+from mc_protocol_generator.generator.constants import (
+    DATATYPE_SIZER_VAR, DATATYPE_WRITER_VAR, DATATYPE_READER_VAR
+)
 from ..code_generator_context import CodeGeneratorContext
-from ast import (Call, Name, Load, Attribute, ClassDef, FunctionDef, Assign,
-                 Store, arguments, arg, BinOp, Add, Return, JoinedStr,
-                 Constant, Expr)
-
-class_sizer_name = 'dl'
-class_writer_name = 'writer'
-class_reader_name = 'reader'
+from ast import (
+    Call, Name, Load, Attribute, ClassDef, FunctionDef, Assign,
+    Store, arguments, arg, BinOp, Add, Return, JoinedStr,
+    Constant, Expr
+)
 
 def validate(compound):
     field_sets = [field.get_field_name_set() for field in compound.fields]
@@ -26,9 +27,13 @@ class Compound(Base):
         self.fields = fields
         validate(self)
 
+    @property
+    def class_name(self):
+        return format_class_name(self.name)
+
     def get_class_name_sets(self):
         return [
-            {format_class_name(self.name)}
+            {self.class_name}
         ] + [
             class_name_set
             for field in self.fields
@@ -85,28 +90,40 @@ class Compound(Base):
             )
         ]
 
-    def get_read_node(self, reader_name):
-        pass
+    def get_read_nodes(self, reader_name, do_assign=True):
+        value_op = Call(
+            func=Attribute(
+                value=Name(id=self.class_name, ctx=Load()),
+                attr='read_data',
+                ctx=Load()
+            ),
+            args=[Name(id=reader_name, ctx=Load())],
+            keywords=[]
+        )
+        if do_assign:
+            return [
+                Assign(
+                    targets=[Name(id=self.field_name, ctx=Store())],
+                    value=value_op
+                )
+            ]
+        return value_op
 
     def _get_class_init_arg_nodes(self):
-        args, opt_args = zip(*[field.get_init_args() for field in self.fields])
-        args = [arg for arg_list in args for arg in arg_list]
-        opt_args = tuple(
-            map(
-                list,
-                zip(*[opt_arg for opt_arg_list in opt_args for opt_arg in opt_arg_list])
-            )
-        )
-        opt_args, defaults = opt_args if len(opt_args) == 2 else ([], [])
-        args = [arg(arg='self', annotation=None, type_comment=None)] + args + opt_args
         return arguments(
             posonlyargs=[],
-            args=args,
+            args=[
+                arg(arg='self', annotation=None, type_comment=None)
+            ] + [
+                arg
+                for field in self.fields
+                for arg in field.get_init_args()
+            ],
             vararg=None,
             kwonlyargs=[],
             kw_defaults=[],
             kwarg=None,
-            defaults=defaults
+            defaults=[]
         )
 
     def _get_class_init_body_nodes(self):
@@ -120,42 +137,40 @@ class Compound(Base):
         if len(self.fields) == 0:
             return [Return(value=Constant(value=0, kind=None))]
         elif len(self.fields) == 1:
-            return [Return(value=self.fields[0].get_len_node(class_sizer_name))]
+            return [Return(value=self.fields[0].get_len_node(DATATYPE_SIZER_VAR))]
         bin_op = BinOp(
-            left=self.fields[0].get_len_node(class_sizer_name),
+            left=self.fields[0].get_len_node(DATATYPE_SIZER_VAR),
             op=Add(),
-            right=self.fields[1].get_len_node(class_sizer_name)
+            right=self.fields[1].get_len_node(DATATYPE_SIZER_VAR)
         )
         for field in self.fields[2:]:
             bin_op = BinOp(
                 left=bin_op,
                 op=Add(),
-                right=field.get_len_node(class_sizer_name)
+                right=field.get_len_node(DATATYPE_SIZER_VAR)
             )
         return [Return(value=bin_op)]
 
     def _get_class_repr_body_nodes(self):
         field_nodes = [
-            nodes
-            for nodes_list in zip(
-                *[
-                    field.get_repr_body_nodes()
-                    for field in self.fields
-                ]
-            )
-            for nodes in nodes_list
-            if len(nodes) > 0
+            field_repr_node_list
+            for field in self.fields
+            for field_repr_node_list in field.get_repr_body_nodes()
         ]
-        nodes = [None, [Constant(value=', ')]] * (len(field_nodes) - 1) + [None]
-        nodes[0::2] = field_nodes
+        repr_nodes = (
+            [None, [Constant(value=', ')]]
+            * (len(field_nodes) - 1)
+            + [None]
+        )
+        repr_nodes[::2] = field_nodes
         return [
             Return(
                 value=JoinedStr(
                     values=[
-                        Constant(value=format_class_name(self.name) + '(')
+                        Constant(value=self.class_name + '(')
                     ] + [
                         node
-                        for node_list in nodes
+                        for node_list in repr_nodes
                         for node in node_list
                     ] + [
                         Constant(value=')')
@@ -168,12 +183,27 @@ class Compound(Base):
         return [
             node
             for field in self.fields
-            for node in field.get_write_nodes(class_writer_name)
+            for node in field.get_write_nodes(DATATYPE_WRITER_VAR)
         ]
 
     def _get_class_read_data_body_nodes(self):
-        from ast import Pass
-        return [Pass()]
+        return [
+            node
+            for field in self.fields
+            for node in field.get_read_nodes(DATATYPE_READER_VAR)
+        ] + [
+            Return(
+                value=Call(
+                    func=Name(id=self.class_name, ctx=Load()),
+                    args=[
+                        arg
+                        for field in self.fields
+                        for arg in field.get_init_args()
+                    ],
+                    keywords=[]
+                )
+            )
+        ]
 
     def get_module_body_nodes(self):
         return [

@@ -245,18 +245,18 @@ Module(
                             arg(arg='slot'),
                             arg(arg='string'),
                             arg(arg='switch_value'),
+                            arg(arg='switch_short'),
+                            arg(arg='switch_long'),
+                            arg(arg='switch_int'),
                             arg(arg='ubyte'),
                             arg(arg='ushort'),
                             arg(arg='uuid'),
                             arg(arg='varint'),
                             arg(arg='varlong'),
-                            arg(arg='switch_short'),
-                            arg(arg='switch_long'),
-                            arg(arg='switch_int'),
                         ],
                         kwonlyargs=[],
                         kw_defaults=[],
-                        defaults=[Constant(value=None), Constant(value=None), Constant(value=None)],
+                        defaults=[],
                     ),
                     body=[
                         Assign(
@@ -2276,22 +2276,25 @@ Module(
                             ),
                             body=[
                                 Assign(
-                                    targets=[Name(id='_switch_values', ctx=Store())],
-                                    value=Dict(
-                                        keys=[Constant(value='switch_short')],
-                                        values=[
-                                            Call(
-                                                func=Attribute(
-                                                    value=Name(id='reader', ctx=Load()),
-                                                    attr='read_short',
-                                                    ctx=Load(),
-                                                ),
-                                                args=[],
-                                                keywords=[],
-                                            )
-                                        ],
+                                    targets=[Name(id='switch_short', ctx=Store())],
+                                    value=Call(
+                                        func=Attribute(
+                                            value=Name(id='reader', ctx=Load()),
+                                            attr='read_short',
+                                            ctx=Load(),
+                                        ),
+                                        args=[],
+                                        keywords=[],
                                     ),
-                                )
+                                ),
+                                Assign(
+                                    targets=[Name(id='switch_long', ctx=Store())],
+                                    value=Constant(value=None),
+                                ),
+                                Assign(
+                                    targets=[Name(id='switch_int', ctx=Store())],
+                                    value=Constant(value=None),
+                                ),
                             ],
                             orelse=[
                                 If(
@@ -2302,34 +2305,33 @@ Module(
                                     ),
                                     body=[
                                         Assign(
-                                            targets=[Name(id='_switch_values', ctx=Store())],
-                                            value=Dict(
-                                                keys=[
-                                                    Constant(value='switch_long'),
-                                                    Constant(value='switch_int'),
-                                                ],
-                                                values=[
-                                                    Call(
-                                                        func=Attribute(
-                                                            value=Name(id='reader', ctx=Load()),
-                                                            attr='read_long',
-                                                            ctx=Load(),
-                                                        ),
-                                                        args=[],
-                                                        keywords=[],
-                                                    ),
-                                                    Call(
-                                                        func=Attribute(
-                                                            value=Name(id='reader', ctx=Load()),
-                                                            attr='read_int',
-                                                            ctx=Load(),
-                                                        ),
-                                                        args=[],
-                                                        keywords=[],
-                                                    ),
-                                                ],
+                                            targets=[Name(id='switch_short', ctx=Store())],
+                                            value=Constant(value=None),
+                                        ),
+                                        Assign(
+                                            targets=[Name(id='switch_long', ctx=Store())],
+                                            value=Call(
+                                                func=Attribute(
+                                                    value=Name(id='reader', ctx=Load()),
+                                                    attr='read_long',
+                                                    ctx=Load(),
+                                                ),
+                                                args=[],
+                                                keywords=[],
                                             ),
-                                        )
+                                        ),
+                                        Assign(
+                                            targets=[Name(id='switch_int', ctx=Store())],
+                                            value=Call(
+                                                func=Attribute(
+                                                    value=Name(id='reader', ctx=Load()),
+                                                    attr='read_int',
+                                                    ctx=Load(),
+                                                ),
+                                                args=[],
+                                                keywords=[],
+                                            ),
+                                        ),
                                     ],
                                     orelse=[],
                                 )
@@ -2427,12 +2429,21 @@ Module(
                                         arg='switch_value',
                                         value=Name(id='switch_value', ctx=Load()),
                                     ),
+                                    keyword(
+                                        arg='switch_short',
+                                        value=Name(id='switch_short', ctx=Load()),
+                                    ),
+                                    keyword(
+                                        arg='switch_long', value=Name(id='switch_long', ctx=Load())
+                                    ),
+                                    keyword(
+                                        arg='switch_int', value=Name(id='switch_int', ctx=Load())
+                                    ),
                                     keyword(arg='ubyte', value=Name(id='ubyte', ctx=Load())),
                                     keyword(arg='ushort', value=Name(id='ushort', ctx=Load())),
                                     keyword(arg='uuid', value=Name(id='uuid', ctx=Load())),
                                     keyword(arg='varint', value=Name(id='varint', ctx=Load())),
                                     keyword(arg='varlong', value=Name(id='varlong', ctx=Load())),
-                                    keyword(value=Name(id='_switch_values', ctx=Load())),
                                 ],
                             )
                         ),

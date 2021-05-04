@@ -1,5 +1,5 @@
 from .base import Base
-from ast import Attribute, Name, Load, Expr, Call
+from ast import Attribute, Name, Load, Expr, Call, Assign, Store
 from mc_protocol_generator.generator.datatypes.constants import FLOAT_DATATYPE_NAME
 
 class Float(Base):
@@ -40,8 +40,24 @@ class Float(Base):
             )
         ]
 
-    def get_read_node(self, reader_name):
-        pass
+    def get_read_nodes(self, reader_name, do_assign=True):
+        value_op = Call(
+            func=Attribute(
+                value=Name(id=reader_name, ctx=Load()),
+                attr='read_float',
+                ctx=Load()
+            ),
+            args=[],
+            keywords=[]
+        )
+        if do_assign:
+            return [
+                Assign(
+                    targets=[Name(id=self.field_name, ctx=Store())],
+                    value=value_op
+                )
+            ]
+        return value_op
 
     @staticmethod
     def from_protocol_data(data):

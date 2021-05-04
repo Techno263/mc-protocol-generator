@@ -30,11 +30,12 @@ class AllTypesPacket:
     state = 'play'
     bound_to = 'client'
 
-    def __init__(self, angle, array, bool, byte, chat, compound, double,
-                 entity_metadata, float, identifier, int, long, nbt, option,
-                 position, short, slot, string, switch_value, ubyte, ushort,
-                 uuid, varint, varlong, switch_short=None, switch_long=None,
-                 switch_int=None):
+    def __init__(
+        self, angle, array, bool, byte, chat, compound, double,
+        entity_metadata, float, identifier, int, long, nbt, option, position,
+        short, slot, string, switch_value, switch_short, switch_long,
+        switch_int, ubyte, ushort, uuid, varint, varlong
+    ):
         self.angle = angle
         self.array = array
         self.bool = bool
@@ -176,18 +177,44 @@ class AllTypesPacket:
         string = reader.read_string()
         switch_value = reader.read_varint()
         if switch_value == 0:
-            _switch_values = {'switch_short': reader.read_short()}
+            switch_short = reader.read_short()
+            switch_long = None
+            switch_int = None
         elif switch_value == 1:
-            _switch_values = {'switch_long': reader.read_long(), 'switch_int': reader.read_int()}
+            switch_short = None
+            switch_long = reader.read_long()
+            switch_int = reader.read_int()
         ubyte = reader.read_ubyte()
         ushort = reader.read_ushort()
         uuid = reader.read_uuid()
         varint = reader.read_varint()
         varlong = reader.read_varlong()
-        return AllTypesPacket(angle=angle, array=array, bool=bool,
-            byte=byte, chat=chat, compound=compound, double=double,
-            entity_metadata=entity_metadata, float=float, identifier=identifier,
-            int=int, long=long, nbt=nbt, option=option, position=position,
-            short=short, slot=slot, string=string, switch_value=switch_value,
-            ubyte=ubyte, ushort=ushort, uuid=uuid, varint=varint, varlong=varlong,
-            **_switch_values)
+        return AllTypesPacket(
+            angle=angle,
+            array=array,
+            bool=bool,
+            byte=byte,
+            chat=chat,
+            compound=compound,
+            double=double,
+            entity_metadata=entity_metadata,
+            float=float,
+            identifier=identifier,
+            int=int,
+            long=long,
+            nbt=nbt,
+            option=option,
+            position=position,
+            short=short,
+            slot=slot,
+            string=string,
+            switch_value=switch_value,
+            switch_short=switch_short,
+            switch_long=switch_long,
+            switch_int=switch_int,
+            ubyte=ubyte,
+            ushort=ushort,
+            uuid=uuid,
+            varint=varint,
+            varlong=varlong,
+        )

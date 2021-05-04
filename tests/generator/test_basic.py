@@ -185,7 +185,48 @@ class TestBasic(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    angle_value = reader.read_angle()
+                    bool_value = reader.read_bool()
+                    byte_value = reader.read_byte()
+                    chat_value = reader.read_chat()
+                    double_value = reader.read_double()
+                    entity_metadata_value = reader.read_entity_metadata()
+                    float_value = reader.read_float()
+                    identifier_value = reader.read_identifier()
+                    int_value = reader.read_int()
+                    long_value = reader.read_long()
+                    nbt_value = reader.read_nbt()
+                    position_value = reader.read_position()
+                    short_value = reader.read_short()
+                    slot_value = reader.read_slot()
+                    string_value = reader.read_string()
+                    ubyte_value = reader.read_ubyte()
+                    ushort_value = reader.read_ushort()
+                    uuid_value = reader.read_uuid()
+                    varint_value = reader.read_varint()
+                    varlong_value = reader.read_varlong()
+                    return BasicPacket(
+                        angle_value,
+                        bool_value,
+                        byte_value,
+                        chat_value,
+                        double_value,
+                        entity_metadata_value,
+                        float_value,
+                        identifier_value,
+                        int_value,
+                        long_value,
+                        nbt_value,
+                        position_value,
+                        short_value,
+                        slot_value,
+                        string_value,
+                        ubyte_value,
+                        ushort_value,
+                        uuid_value,
+                        varint_value,
+                        varlong_value
+                    )
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Basic Packet', packet.name)
@@ -193,7 +234,6 @@ class TestBasic(unittest.TestCase):
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),

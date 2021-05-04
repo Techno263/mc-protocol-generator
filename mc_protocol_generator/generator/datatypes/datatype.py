@@ -1,6 +1,8 @@
-from . import (Angle, Array, Bool, Byte, Chat, Compound, Double,
-    EntityMetadata, Float, Identifier, Int, Long, NBT, Option, Position,
-    Short, Slot, String, Switch, UByte, UShort, UUID, VarInt, VarLong)
+from . import (
+    Angle, Array, Bool, Byte, Chat, Compound, Double, EntityMetadata,
+    Float, Identifier, Int, Long, NBT, Option, Position, Short, Slot,
+    String, Switch, UByte, UShort, UUID, VarInt, VarLong
+)
 
 integer_types = {Byte, UByte, Short, UShort, Int, Long, VarInt, VarLong}
 

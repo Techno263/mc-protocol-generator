@@ -108,15 +108,7 @@ class TestPacket(unittest.TestCase):
                 packet_state = 'play'
                 packet_bound_to = 'client'
 
-                def __init__(self,
-                             uuid,
-                             action,
-                             title=None,
-                             health=None,
-                             color=None,
-                             division=None,
-                             flags=None
-                ):
+                def __init__(self, uuid, action, title, health, color, division, flags):
                     self.uuid = uuid
                     self.action = action
                     self.title = title
@@ -169,7 +161,45 @@ class TestPacket(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    uuid = reader.read_uuid()
+                    action = reader.read_varint()
+                    if action == 0:
+                        title = reader.read_chat()
+                        health = reader.read_float()
+                        color = reader.read_varint()
+                        division = reader.read_varint()
+                        flags = reader.read_ubyte()
+                    elif action == 1:
+                        title = None
+                        health = None
+                        color = None
+                        division = None
+                        flags = None
+                    elif action == 2:
+                        health = reader.read_float()
+                        title = None
+                        color = None
+                        division = None
+                        flags = None
+                    elif action == 3:
+                        title = reader.read_chat()
+                        health = None
+                        color = None
+                        division = None
+                        flags = None
+                    elif action == 4:
+                        color = reader.read_varint()
+                        division = reader.read_varint()
+                        title = None
+                        health = None
+                        flags = None
+                    elif action == 5:
+                        flags = reader.read_ubyte()
+                        title = None
+                        health = None
+                        color = None
+                        division = None
+                    return BossBar(uuid, action, title, health, color, division, flags)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Boss Bar', packet.name)
@@ -177,7 +207,6 @@ class TestPacket(unittest.TestCase):
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),

@@ -53,7 +53,8 @@ class TestOption(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    optional_int = reader.read_int() if reader.read_bool() else None
+                    return IntOptionPacket(optional_int)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Int Option Packet', packet.name)
@@ -61,7 +62,6 @@ class TestOption(unittest.TestCase):
         self.assertEqual('play', packet.state)
         self.assertEqual('client', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -118,7 +118,8 @@ class TestOption(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    optional_string = reader.read_string() if reader.read_bool() else None
+                    return StringOptionPacket(optional_string)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('String Option Packet', packet.name)
@@ -126,7 +127,6 @@ class TestOption(unittest.TestCase):
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -192,7 +192,11 @@ class TestOption(unittest.TestCase):
 
                 @staticmethod
                 def read_packet(reader):
-                    pass
+                    optional_array = (
+                        [reader.read_int() for _ in range(reader.read_varint())]
+                        if reader.read_bool() else None
+                    )
+                    return ArrayOptionPacket(optional_array)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Array Option Packet', packet.name)
@@ -200,7 +204,6 @@ class TestOption(unittest.TestCase):
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
@@ -255,7 +258,9 @@ class OptionalCompound:
 
     @staticmethod
     def read_data(reader):
-        pass
+        field1 = reader.read_short()
+        field2 = reader.read_string()
+        return OptionalCompound(field1, field2)
 
 class CompoundOptionPacket:
     packet_name = 'Compound Option Packet'
@@ -287,7 +292,8 @@ class CompoundOptionPacket:
 
     @staticmethod
     def read_packet(reader):
-        pass
+        optional_compound = OptionalCompound.read_data(reader) if reader.read_bool() else None
+        return CompoundOptionPacket(optional_compound)
         '''
         packet = Packet.parse_packet_data(packet_data)
         self.assertEqual('Compound Option Packet', packet.name)
@@ -295,7 +301,6 @@ class CompoundOptionPacket:
         self.assertEqual('play', packet.state)
         self.assertEqual('server', packet.bound_to)
         generated_src_code = packet.get_packet_code()
-        generated_src_code = format_str(generated_src_code, mode=black_mode)
         exec(generated_src_code)
         self.assertEqual(
             format_str(packet_src_code, mode=black_mode),
